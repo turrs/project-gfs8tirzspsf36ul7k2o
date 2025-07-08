@@ -56,6 +56,7 @@ export const WalletConnection: React.FC = () => {
   if (connected && walletAddress) {
     return (
       <Card className="dex-card p-4 space-y-4">
+        {/* Wallet Info Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-dex rounded-full flex items-center justify-center">
@@ -72,7 +73,8 @@ export const WalletConnection: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={copyAddress}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white p-2"
+              title="Copy Address"
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -81,18 +83,10 @@ export const WalletConnection: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={openInExplorer}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white p-2"
+              title="View in Explorer"
             >
               <ExternalLink className="w-4 h-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDisconnect}
-              className="text-red-400 hover:text-red-300"
-            >
-              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -120,7 +114,8 @@ export const WalletConnection: React.FC = () => {
               size="sm"
               onClick={handleRefreshBalance}
               disabled={balanceLoading}
-              className="text-gray-400 hover:text-white disabled:opacity-50"
+              className="text-gray-400 hover:text-white disabled:opacity-50 p-2"
+              title="Refresh Balance"
             >
               <RefreshCw className={`w-4 h-4 ${balanceLoading ? 'loading-spinner' : ''}`} />
             </Button>
@@ -131,6 +126,18 @@ export const WalletConnection: React.FC = () => {
               RPC rate limited. Click refresh to retry.
             </p>
           )}
+        </div>
+
+        {/* Disconnect Button - Made more prominent */}
+        <div className="pt-2 border-t border-white/10">
+          <Button
+            variant="outline"
+            onClick={handleDisconnect}
+            className="w-full bg-transparent border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50 transition-all duration-200"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Disconnect Wallet
+          </Button>
         </div>
       </Card>
     );
