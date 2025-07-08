@@ -1,12 +1,12 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Wallet, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, LogOut, Copy, ExternalLink, RefreshCw } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner';
 
 export const WalletConnection: React.FC = () => {
-  const { connected, connecting, connect, disconnect, walletAddress } = useWallet();
+  const { connected, connecting, connect, disconnect, walletAddress, solBalance, refreshBalance } = useWallet();
 
   const handleConnect = async () => {
     try {
@@ -22,7 +22,8 @@ export const WalletConnection: React.FC = () => {
       await disconnect();
       toast.success('Wallet disconnected');
     } catch (error) {
-      toast.error('Failed to disconnect wallet');
+      console.error('Disconnect error:', error);
+      toast.success('Wallet disconnected'); // Show success even if there's an error
     }
   };
 
@@ -39,13 +40,22 @@ export const WalletConnection: React.FC = () => {
     }
   };
 
+  const handleRefreshBalance = async () => {
+    try {
+      await refreshBalance();
+      toast.success('Balance refreshed');
+    } catch (error) {
+      toast.error('Failed to refresh balance');
+    }
+  };
+
   const formatAddress = (address: string) => {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
 
   if (connected && walletAddress) {
     return (
-      <Card className="dex-card p-4">
+      <Card className="dex-card p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-dex rounded-full flex items-center justify-center">
@@ -83,6 +93,26 @@ export const WalletConnection: React.FC = () => {
               className="text-red-400 hover:text-red-300"
             >
               <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Balance Display */}
+        <div className="bg-dex-gray/30 rounded-xl p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">SOL Balance</p>
+              <p className="text-lg font-semibold text-white">
+                {solBalance !== null ? `${solBalance.toFixed(4)} SOL` : 'Loading...'}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshBalance}
+              className="text-gray-400 hover:text-white"
+            >
+              <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
         </div>

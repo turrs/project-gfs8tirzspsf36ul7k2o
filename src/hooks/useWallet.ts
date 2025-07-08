@@ -20,6 +20,8 @@ interface UseWalletReturn {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   walletAddress: string | null;
+  solBalance: number | null;
+  refreshBalance: () => Promise<void>;
 }
 
 export const useWallet = (): UseWalletReturn => {
@@ -27,6 +29,7 @@ export const useWallet = (): UseWalletReturn => {
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [publicKey, setPublicKey] = useState<any>(null);
+  const [solBalance, setSolBalance] = useState<number | null>(null);
 
   // Check if wallet is available
   const getWallet = useCallback(() => {
@@ -46,6 +49,25 @@ export const useWallet = (): UseWalletReturn => {
     }
     return null;
   }, []);
+
+  // Function to get SOL balance
+  const refreshBalance = useCallback(async () => {
+    if (!publicKey || !connected) {
+      setSolBalance(null);
+      return;
+    }
+
+    try {
+      const { Connection, PublicKey } = await import('@solana/web3.js');
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      const balance = await connection.getBalance(new PublicKey(publicKey.toString()));
+      setSolBalance(balance / 1e9); // Convert lamports to SOL
+      console.log('SOL Balance:', balance / 1e9);
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      setSolBalance(null);
+    }
+  }, [publicKey, connected]);
 
   // Initialize wallet connection
   useEffect(() => {
@@ -71,6 +93,7 @@ export const useWallet = (): UseWalletReturn => {
         console.log('Wallet disconnected');
         setConnected(false);
         setPublicKey(null);
+        setSolBalance(null);
         setConnecting(false);
       };
 
@@ -101,6 +124,13 @@ export const useWallet = (): UseWalletReturn => {
     };
   }, [getWallet]);
 
+  // Refresh balance when wallet connects
+  useEffect(() => {
+    if (connected && publicKey) {
+      refreshBalance();
+    }
+  }, [connected, publicKey, refreshBalance]);
+
   const connect = useCallback(async () => {
     if (!wallet) {
       // Redirect to wallet installation
@@ -123,8 +153,16 @@ export const useWallet = (): UseWalletReturn => {
 
     try {
       await wallet.disconnect();
+      // Force reset state
+      setConnected(false);
+      setPublicKey(null);
+      setSolBalance(null);
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
+      // Force reset state even if disconnect fails
+      setConnected(false);
+      setPublicKey(null);
+      setSolBalance(null);
       throw error;
     }
   }, [wallet]);
@@ -138,6 +176,8 @@ export const useWallet = (): UseWalletReturn => {
     publicKey,
     connect,
     disconnect,
-    walletAddress
+    walletAddress,
+    solBalance,
+    refreshBalance
   };
 };

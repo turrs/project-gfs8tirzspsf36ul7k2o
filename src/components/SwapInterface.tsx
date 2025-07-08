@@ -12,7 +12,7 @@ import { Token, DEFAULT_FROM_TOKEN, DEFAULT_TO_TOKEN, isValidTokenAmount } from 
 import { toast } from 'sonner';
 
 export const SwapInterface: React.FC = () => {
-  const { connected, wallet } = useWallet();
+  const { connected, wallet, solBalance } = useWallet();
   const { quote, loading, error, getQuote, executeSwap, resetQuote } = useJupiter();
   
   const [fromToken, setFromToken] = useState<Token>(DEFAULT_FROM_TOKEN);
@@ -55,12 +55,15 @@ export const SwapInterface: React.FC = () => {
   };
 
   const handleMaxClick = () => {
-    // In a real implementation, you would get the actual token balance
-    // For demo purposes, we'll set a placeholder amount
-    if (fromToken.symbol === 'SOL') {
-      setFromAmount('1.0');
+    if (fromToken.symbol === 'SOL' && solBalance !== null) {
+      // Leave some SOL for transaction fees (0.01 SOL)
+      const maxAmount = Math.max(0, solBalance - 0.01);
+      setFromAmount(maxAmount.toFixed(4));
     } else {
+      // For other tokens, we would need to fetch their balance
+      // For now, set a placeholder amount
       setFromAmount('100.0');
+      toast.info('Token balance fetching not implemented yet');
     }
   };
 
@@ -119,7 +122,7 @@ export const SwapInterface: React.FC = () => {
                 onClick={handleMaxClick}
                 className="text-xs text-dex-primary hover:text-dex-primary/80 transition-colors"
               >
-                MAX
+                MAX {fromToken.symbol === 'SOL' && solBalance !== null && `(${solBalance.toFixed(4)})`}
               </button>
             </div>
             
