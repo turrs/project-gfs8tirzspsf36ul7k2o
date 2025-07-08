@@ -1,20 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PublicKey } from '@solana/web3.js';
 
 interface WalletAdapter {
-  publicKey: PublicKey | null;
+  publicKey: any;
   connected: boolean;
   connecting: boolean;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
-  sendTransaction: (transaction: any, connection: any) => Promise<string>;
+  sendTransaction: (transaction: any, connection?: any) => Promise<string>;
+  on: (event: string, callback: (data: any) => void) => void;
+  removeAllListeners: () => void;
+  isConnected: boolean;
 }
 
 interface UseWalletReturn {
   wallet: WalletAdapter | null;
   connected: boolean;
   connecting: boolean;
-  publicKey: PublicKey | null;
+  publicKey: any;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   walletAddress: string | null;
@@ -24,7 +26,7 @@ export const useWallet = (): UseWalletReturn => {
   const [wallet, setWallet] = useState<WalletAdapter | null>(null);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
+  const [publicKey, setPublicKey] = useState<any>(null);
 
   // Check if wallet is available
   const getWallet = useCallback(() => {
@@ -52,38 +54,49 @@ export const useWallet = (): UseWalletReturn => {
       setWallet(walletAdapter);
       
       // Check if already connected
-      if (walletAdapter.isConnected) {
+      if (walletAdapter.isConnected && walletAdapter.publicKey) {
         setConnected(true);
         setPublicKey(walletAdapter.publicKey);
       }
 
       // Listen for connection events
-      walletAdapter.on('connect', (publicKey: PublicKey) => {
-        console.log('Wallet connected:', publicKey.toString());
+      const handleConnect = (publicKey: any) => {
+        console.log('Wallet connected:', publicKey?.toString());
         setConnected(true);
         setPublicKey(publicKey);
         setConnecting(false);
-      });
+      };
 
-      walletAdapter.on('disconnect', () => {
+      const handleDisconnect = () => {
         console.log('Wallet disconnected');
         setConnected(false);
         setPublicKey(null);
         setConnecting(false);
-      });
+      };
 
-      // Auto-connect if previously connected
-      if (walletAdapter.isConnected) {
-        walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
-          // Ignore errors for auto-connect
-        });
+      try {
+        walletAdapter.on('connect', handleConnect);
+        walletAdapter.on('disconnect', handleDisconnect);
+
+        // Auto-connect if previously connected
+        if (walletAdapter.isConnected) {
+          walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
+            // Ignore errors for auto-connect
+          });
+        }
+      } catch (error) {
+        console.error('Error setting up wallet listeners:', error);
       }
     }
 
     return () => {
       // Cleanup listeners
-      if (walletAdapter) {
-        walletAdapter.removeAllListeners();
+      if (walletAdapter && walletAdapter.removeAllListeners) {
+        try {
+          walletAdapter.removeAllListeners();
+        } catch (error) {
+          console.error('Error removing wallet listeners:', error);
+        }
       }
     };
   }, [getWallet]);

@@ -1,10 +1,5 @@
-import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
-
 // Solana Devnet RPC endpoint
 export const SOLANA_RPC_ENDPOINT = 'https://api.devnet.solana.com';
-
-// Create connection to Solana devnet
-export const connection = new Connection(SOLANA_RPC_ENDPOINT, 'confirmed');
 
 // Jupiter API base URL
 export const JUPITER_API_BASE = 'https://quote-api.jup.ag/v6';
@@ -19,8 +14,8 @@ export const COMMON_TOKENS = {
 // Helper function to validate Solana address
 export const isValidSolanaAddress = (address: string): boolean => {
   try {
-    new PublicKey(address);
-    return true;
+    // Basic validation without importing PublicKey initially
+    return address.length >= 32 && address.length <= 44;
   } catch {
     return false;
   }
@@ -43,6 +38,9 @@ export const getTokenBalance = async (
 ): Promise<number> => {
   try {
     if (tokenMint === COMMON_TOKENS.SOL) {
+      // Dynamically import to avoid initial loading issues
+      const { Connection, PublicKey } = await import('@solana/web3.js');
+      const connection = new Connection(SOLANA_RPC_ENDPOINT, 'confirmed');
       const balance = await connection.getBalance(new PublicKey(walletAddress));
       return balance;
     }
@@ -58,7 +56,7 @@ export const getTokenBalance = async (
 
 // Helper function to send transaction
 export const sendTransaction = async (
-  transaction: Transaction | VersionedTransaction,
+  transaction: any,
   wallet: any
 ): Promise<string> => {
   try {
@@ -66,13 +64,11 @@ export const sendTransaction = async (
       throw new Error('Wallet not connected');
     }
 
-    let signature: string;
-    
-    if (transaction instanceof VersionedTransaction) {
-      signature = await wallet.sendTransaction(transaction, connection);
-    } else {
-      signature = await wallet.sendTransaction(transaction, connection);
-    }
+    // Dynamically import to avoid initial loading issues
+    const { Connection } = await import('@solana/web3.js');
+    const connection = new Connection(SOLANA_RPC_ENDPOINT, 'confirmed');
+
+    const signature = await wallet.sendTransaction(transaction, connection);
 
     // Wait for confirmation
     await connection.confirmTransaction(signature, 'confirmed');

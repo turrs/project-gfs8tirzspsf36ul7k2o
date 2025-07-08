@@ -131,9 +131,24 @@ export const useJupiter = (): UseJupiterReturn => {
         throw new Error('No swap transaction returned');
       }
 
-      // Deserialize and send transaction
-      const swapTransactionBuf = Buffer.from(swapData.swapTransaction, 'base64');
-      const transaction = require('@solana/web3.js').VersionedTransaction.deserialize(swapTransactionBuf);
+      // Handle Buffer polyfill issue
+      let transaction;
+      try {
+        // Try to use the global Buffer if available
+        const BufferPolyfill = (globalThis as any).Buffer || (window as any).Buffer;
+        if (!BufferPolyfill) {
+          throw new Error('Buffer not available');
+        }
+        
+        const swapTransactionBuf = BufferPolyfill.from(swapData.swapTransaction, 'base64');
+        
+        // Dynamically import Solana Web3.js to avoid initial loading issues
+        const { VersionedTransaction } = await import('@solana/web3.js');
+        transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      } catch (bufferError) {
+        console.error('Buffer/deserialization error:', bufferError);
+        throw new Error('Failed to process transaction. Please try again.');
+      }
 
       // Send transaction through wallet
       const signature = await wallet.sendTransaction(transaction, {
