@@ -8,7 +8,7 @@ export interface Token {
   verified?: boolean;
 }
 
-// Popular tokens on Solana Devnet
+// Popular tokens on Solana Devnet that are tradable on Jupiter
 export const POPULAR_TOKENS: Token[] = [
   {
     address: 'So11111111111111111111111111111111111111112',
@@ -20,18 +20,18 @@ export const POPULAR_TOKENS: Token[] = [
     tags: ['native']
   },
   {
-    address: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+    address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     symbol: 'USDC',
-    name: 'USD Coin (Devnet)',
+    name: 'USD Coin',
     decimals: 6,
     logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
     verified: true,
     tags: ['stablecoin']
   },
   {
-    address: 'EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS',
+    address: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     symbol: 'USDT',
-    name: 'Tether USD (Devnet)',
+    name: 'Tether USD',
     decimals: 6,
     logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg',
     verified: true,
@@ -40,11 +40,29 @@ export const POPULAR_TOKENS: Token[] = [
   {
     address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     symbol: 'BONK',
-    name: 'Bonk (Devnet)',
+    name: 'Bonk',
     decimals: 5,
     logoURI: 'https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM_hACsT_q6wqwf5cSY7I',
     verified: true,
     tags: ['meme']
+  },
+  {
+    address: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
+    symbol: 'mSOL',
+    name: 'Marinade staked SOL',
+    decimals: 9,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So/logo.png',
+    verified: true,
+    tags: ['lst']
+  },
+  {
+    address: 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    symbol: 'jitoSOL',
+    name: 'Jito Staked SOL',
+    decimals: 9,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn/logo.png',
+    verified: true,
+    tags: ['lst']
   }
 ];
 

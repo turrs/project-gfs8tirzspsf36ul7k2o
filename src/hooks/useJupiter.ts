@@ -75,10 +75,25 @@ export const useJupiter = (): UseJupiterReturn => {
         asLegacyTransaction: 'false'
       });
 
-      const response = await fetch(`${JUPITER_API_BASE}/quote?${params}`);
+      const url = `${JUPITER_API_BASE}/quote?${params}`;
+      console.log('Requesting quote from:', url);
+
+      const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`Quote request failed: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Quote request failed:', response.status, errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            throw new Error(errorData.error);
+          }
+        } catch (parseError) {
+          // If we can't parse the error, use the status text
+        }
+        
+        throw new Error(`Quote request failed: ${response.status} ${response.statusText}`);
       }
 
       const quoteData = await response.json();
@@ -87,10 +102,12 @@ export const useJupiter = (): UseJupiterReturn => {
         throw new Error(quoteData.error);
       }
 
+      console.log('Quote received:', quoteData);
       setQuote(quoteData);
     } catch (err) {
       console.error('Error getting quote:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get quote');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get quote';
+      setError(errorMessage);
       setQuote(null);
     } finally {
       setLoading(false);
