@@ -1,0 +1,125 @@
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Wallet, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { useWallet } from '@/hooks/useWallet';
+import { toast } from 'sonner';
+
+export const WalletConnection: React.FC = () => {
+  const { connected, connecting, connect, disconnect, walletAddress } = useWallet();
+
+  const handleConnect = async () => {
+    try {
+      await connect();
+      toast.success('Wallet connected successfully!');
+    } catch (error) {
+      toast.error('Failed to connect wallet. Please try again.');
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await disconnect();
+      toast.success('Wallet disconnected');
+    } catch (error) {
+      toast.error('Failed to disconnect wallet');
+    }
+  };
+
+  const copyAddress = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      toast.success('Address copied to clipboard');
+    }
+  };
+
+  const openInExplorer = () => {
+    if (walletAddress) {
+      window.open(`https://explorer.solana.com/address/${walletAddress}?cluster=devnet`, '_blank');
+    }
+  };
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+
+  if (connected && walletAddress) {
+    return (
+      <Card className="dex-card p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-dex rounded-full flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Connected</p>
+              <p className="font-semibold text-white">{formatAddress(walletAddress)}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={copyAddress}
+              className="text-gray-400 hover:text-white"
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openInExplorer}
+              className="text-gray-400 hover:text-white"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDisconnect}
+              className="text-red-400 hover:text-red-300"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="dex-card p-6 text-center">
+      <div className="mb-4">
+        <div className="w-16 h-16 bg-gradient-dex rounded-full flex items-center justify-center mx-auto mb-4">
+          <Wallet className="w-8 h-8 text-white" />
+        </div>
+        <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
+        <p className="text-gray-400 text-sm">
+          Connect your Solana wallet to start trading on the DEX
+        </p>
+      </div>
+      
+      <Button
+        onClick={handleConnect}
+        disabled={connecting}
+        className="dex-button w-full"
+      >
+        {connecting ? (
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full loading-spinner" />
+            <span>Connecting...</span>
+          </div>
+        ) : (
+          'Connect Wallet'
+        )}
+      </Button>
+      
+      <p className="text-xs text-gray-500 mt-3">
+        Supports Phantom, Solflare, and other Solana wallets
+      </p>
+    </Card>
+  );
+};
