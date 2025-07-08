@@ -6,7 +6,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner';
 
 export const WalletConnection: React.FC = () => {
-  const { connected, connecting, connect, disconnect, walletAddress, solBalance, refreshBalance } = useWallet();
+  const { connected, connecting, connect, disconnect, walletAddress, solBalance, refreshBalance, balanceLoading } = useWallet();
 
   const handleConnect = async () => {
     try {
@@ -45,7 +45,7 @@ export const WalletConnection: React.FC = () => {
       await refreshBalance();
       toast.success('Balance refreshed');
     } catch (error) {
-      toast.error('Failed to refresh balance');
+      toast.error('Failed to refresh balance. RPC may be rate limited.');
     }
   };
 
@@ -103,18 +103,34 @@ export const WalletConnection: React.FC = () => {
             <div>
               <p className="text-sm text-gray-400">SOL Balance</p>
               <p className="text-lg font-semibold text-white">
-                {solBalance !== null ? `${solBalance.toFixed(4)} SOL` : 'Loading...'}
+                {balanceLoading ? (
+                  <span className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-dex-primary border-t-transparent rounded-full loading-spinner" />
+                    <span>Loading...</span>
+                  </span>
+                ) : solBalance !== null ? (
+                  `${solBalance.toFixed(4)} SOL`
+                ) : (
+                  <span className="text-gray-500">Unable to load</span>
+                )}
               </p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRefreshBalance}
-              className="text-gray-400 hover:text-white"
+              disabled={balanceLoading}
+              className="text-gray-400 hover:text-white disabled:opacity-50"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${balanceLoading ? 'loading-spinner' : ''}`} />
             </Button>
           </div>
+          
+          {solBalance === null && !balanceLoading && (
+            <p className="text-xs text-gray-500 mt-1">
+              RPC rate limited. Click refresh to retry.
+            </p>
+          )}
         </div>
       </Card>
     );

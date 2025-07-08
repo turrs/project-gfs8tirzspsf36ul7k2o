@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getConnection, getTokenBalance, COMMON_TOKENS } from '@/lib/solana';
 
 interface WalletAdapter {
   publicKey: any;
@@ -22,6 +23,7 @@ interface UseWalletReturn {
   walletAddress: string | null;
   solBalance: number | null;
   refreshBalance: () => Promise<void>;
+  balanceLoading: boolean;
 }
 
 export const useWallet = (): UseWalletReturn => {
@@ -30,6 +32,7 @@ export const useWallet = (): UseWalletReturn => {
   const [connecting, setConnecting] = useState(false);
   const [publicKey, setPublicKey] = useState<any>(null);
   const [solBalance, setSolBalance] = useState<number | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   // Check if wallet is available
   const getWallet = useCallback(() => {
@@ -50,22 +53,30 @@ export const useWallet = (): UseWalletReturn => {
     return null;
   }, []);
 
-  // Function to get SOL balance
+  // Function to get SOL balance with improved error handling
   const refreshBalance = useCallback(async () => {
     if (!publicKey || !connected) {
       setSolBalance(null);
       return;
     }
 
+    setBalanceLoading(true);
     try {
-      const { Connection, PublicKey } = await import('@solana/web3.js');
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-      const balance = await connection.getBalance(new PublicKey(publicKey.toString()));
-      setSolBalance(balance / 1e9); // Convert lamports to SOL
-      console.log('SOL Balance:', balance / 1e9);
+      console.log('Fetching balance for:', publicKey.toString());
+      const balance = await getTokenBalance(publicKey.toString(), COMMON_TOKENS.SOL);
+      const solAmount = balance / 1e9; // Convert lamports to SOL
+      setSolBalance(solAmount);
+      console.log('SOL Balance updated:', solAmount);
     } catch (error) {
       console.error('Error fetching balance:', error);
       setSolBalance(null);
+      
+      // Show user-friendly error message
+      if (error instanceof Error && error.message.includes('403')) {
+        console.warn('RPC rate limit reached, balance will be retried later');
+      }
+    } finally {
+      setBalanceLoading(false);
     }
   }, [publicKey, connected]);
 
@@ -124,10 +135,15 @@ export const useWallet = (): UseWalletReturn => {
     };
   }, [getWallet]);
 
-  // Refresh balance when wallet connects
+  // Refresh balance when wallet connects with delay to avoid immediate rate limiting
   useEffect(() => {
     if (connected && publicKey) {
-      refreshBalance();
+      // Add a small delay to avoid immediate rate limiting
+      const timer = setTimeout(() => {
+        refreshBalance();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
     }
   }, [connected, publicKey, refreshBalance]);
 
@@ -157,12 +173,14 @@ export const useWallet = (): UseWalletReturn => {
       setConnected(false);
       setPublicKey(null);
       setSolBalance(null);
+      setBalanceLoading(false);
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
       // Force reset state even if disconnect fails
       setConnected(false);
       setPublicKey(null);
       setSolBalance(null);
+      setBalanceLoading(false);
       throw error;
     }
   }, [wallet]);
@@ -178,6 +196,7 @@ export const useWallet = (): UseWalletReturn => {
     disconnect,
     walletAddress,
     solBalance,
-    refreshBalance
+    refreshBalance,
+    balanceLoading
   };
 };
