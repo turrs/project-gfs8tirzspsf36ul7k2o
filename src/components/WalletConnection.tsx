@@ -88,6 +88,16 @@ export const WalletConnection: React.FC = () => {
             >
               <ExternalLink className="w-4 h-4" />
             </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDisconnect}
+              className="text-red-400 hover:text-red-300 p-2"
+              title="Disconnect Wallet"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
@@ -126,18 +136,6 @@ export const WalletConnection: React.FC = () => {
               RPC rate limited. Click refresh to retry.
             </p>
           )}
-        </div>
-
-        {/* Disconnect Button - Made more prominent */}
-        <div className="pt-2 border-t border-white/10">
-          <Button
-            variant="outline"
-            onClick={handleDisconnect}
-            className="w-full bg-transparent border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/50 transition-all duration-200"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Disconnect Wallet
-          </Button>
         </div>
       </Card>
     );
