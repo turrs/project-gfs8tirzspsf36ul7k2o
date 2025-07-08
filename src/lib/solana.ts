@@ -1,14 +1,14 @@
-// Solana Devnet RPC endpoint
-export const SOLANA_RPC_ENDPOINT = 'https://api.devnet.solana.com';
+// Solana Mainnet RPC endpoint
+export const SOLANA_RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com';
 
 // Jupiter API base URL
 export const JUPITER_API_BASE = 'https://quote-api.jup.ag/v6';
 
-// Common token addresses on Devnet
+// Common token addresses on Mainnet
 export const COMMON_TOKENS = {
   SOL: 'So11111111111111111111111111111111111111112',
-  USDC: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', // Devnet USDC
-  USDT: 'EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS', // Devnet USDT
+  USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
 };
 
 // Helper function to validate Solana address

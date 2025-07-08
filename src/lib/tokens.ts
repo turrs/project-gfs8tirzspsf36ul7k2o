@@ -8,7 +8,7 @@ export interface Token {
   verified?: boolean;
 }
 
-// Popular tokens on Solana Devnet that are tradable on Jupiter
+// Popular tokens on Solana Mainnet that are tradable on Jupiter
 export const POPULAR_TOKENS: Token[] = [
   {
     address: 'So11111111111111111111111111111111111111112',
@@ -63,6 +63,60 @@ export const POPULAR_TOKENS: Token[] = [
     logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn/logo.png',
     verified: true,
     tags: ['lst']
+  },
+  {
+    address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+    symbol: 'JUP',
+    name: 'Jupiter',
+    decimals: 6,
+    logoURI: 'https://static.jup.ag/jup/icon.png',
+    verified: true,
+    tags: ['governance']
+  },
+  {
+    address: 'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk',
+    symbol: 'WEN',
+    name: 'Wen',
+    decimals: 5,
+    logoURI: 'https://shdw-drive.genesysgo.net/7nPP797RprCMJaSXsyoTiFvMZVQ6y1dUgobvczdWGd35/wen.png',
+    verified: true,
+    tags: ['meme']
+  },
+  {
+    address: 'bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1',
+    symbol: 'bSOL',
+    name: 'BlazeStake Staked SOL',
+    decimals: 9,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1/logo.png',
+    verified: true,
+    tags: ['lst']
+  },
+  {
+    address: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
+    symbol: 'HNT',
+    name: 'Helium Network Token',
+    decimals: 8,
+    logoURI: 'https://shdw-drive.genesysgo.net/CsDkETHRRR1EcueeN346MJoqzymkkr7RFjMqGpZMzAib/hnt.png',
+    verified: true,
+    tags: ['depin']
+  },
+  {
+    address: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
+    symbol: 'RENDER',
+    name: 'Render',
+    decimals: 8,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof/logo.png',
+    verified: true,
+    tags: ['ai']
+  },
+  {
+    address: '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+    symbol: 'WIF',
+    name: 'dogwifhat',
+    decimals: 6,
+    logoURI: 'https://bafkreibk3covs5ltyqxa272oieh7kqzle5ym4t7qbrvgr2n7b2jtcza5aq.ipfs.nftstorage.link/',
+    verified: true,
+    tags: ['meme']
   }
 ];
 

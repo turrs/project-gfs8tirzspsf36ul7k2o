@@ -33,7 +33,7 @@ const Index = () => {
               <div className="flex items-center space-x-4">
                 <div className="hidden md:flex items-center space-x-6 text-sm">
                   <span className="text-gray-400">Network:</span>
-                  <span className="text-dex-secondary font-medium">Devnet</span>
+                  <span className="text-dex-secondary font-medium">Mainnet</span>
                 </div>
               </div>
             </div>
@@ -133,8 +133,8 @@ const Index = () => {
                 <div className="space-y-3">
                   {[
                     { symbol: 'SOL', name: 'Solana', change: '+5.2%', price: '$98.45' },
-                    { symbol: 'BONK', name: 'Bonk', change: '+12.8%', price: '$0.000015' },
-                    { symbol: 'USDC', name: 'USD Coin', change: '+0.1%', price: '$1.00' },
+                    { symbol: 'JUP', name: 'Jupiter', change: '+8.4%', price: '$0.85' },
+                    { symbol: 'WIF', name: 'dogwifhat', change: '+15.2%', price: '$2.34' },
                   ].map((token, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-dex-gray/20 rounded-xl">
                       <div>
@@ -158,8 +158,8 @@ const Index = () => {
                 <div className="space-y-3">
                   {[
                     { from: 'SOL', to: 'USDC', amount: '2.5', time: '2m ago' },
-                    { from: 'USDC', to: 'BONK', amount: '100', time: '5m ago' },
-                    { from: 'SOL', to: 'USDT', amount: '1.2', time: '8m ago' },
+                    { from: 'USDC', to: 'JUP', amount: '100', time: '5m ago' },
+                    { from: 'WIF', to: 'SOL', amount: '50', time: '8m ago' },
                   ].map((swap, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-dex-gray/20 rounded-xl">
                       <div className="flex items-center space-x-2">
@@ -181,10 +181,10 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
               <p className="text-gray-400 text-sm">
-                Built on Solana Devnet • Powered by Jupiter Aggregator
+                Built on Solana Mainnet • Powered by Jupiter Aggregator
               </p>
               <p className="text-gray-500 text-xs mt-2">
-                This is a demo DEX for educational purposes only
+                Trade real tokens with live market data
               </p>
             </div>
           </div>

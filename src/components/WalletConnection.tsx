@@ -35,7 +35,7 @@ export const WalletConnection: React.FC = () => {
 
   const openInExplorer = () => {
     if (walletAddress) {
-      window.open(`https://explorer.solana.com/address/${walletAddress}?cluster=devnet`, '_blank');
+      window.open(`https://explorer.solana.com/address/${walletAddress}`, '_blank');
     }
   };
 
@@ -98,7 +98,7 @@ export const WalletConnection: React.FC = () => {
         </div>
         <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
         <p className="text-gray-400 text-sm">
-          Connect your Solana wallet to start trading on the DEX
+          Connect your Solana wallet to start trading on mainnet
         </p>
       </div>
       
