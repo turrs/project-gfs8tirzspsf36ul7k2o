@@ -126,6 +126,10 @@ export const useJupiter = (): UseJupiterReturn => {
     setError(null);
 
     try {
+      console.log('Starting swap execution...');
+      console.log('Wallet object:', wallet);
+      console.log('Available wallet methods:', Object.getOwnPropertyNames(wallet));
+
       // Get swap transaction
       const swapResponse = await fetch(`${JUPITER_API_BASE}/swap`, {
         method: 'POST',
@@ -142,6 +146,8 @@ export const useJupiter = (): UseJupiterReturn => {
       });
 
       if (!swapResponse.ok) {
+        const errorText = await swapResponse.text();
+        console.error('Swap request failed:', swapResponse.status, errorText);
         throw new Error(`Swap request failed: ${swapResponse.statusText}`);
       }
 
@@ -150,6 +156,8 @@ export const useJupiter = (): UseJupiterReturn => {
       if (!swapData.swapTransaction) {
         throw new Error('No swap transaction returned');
       }
+
+      console.log('Swap transaction received, processing...');
 
       // Use Buffer from the imported polyfill
       try {
@@ -160,12 +168,37 @@ export const useJupiter = (): UseJupiterReturn => {
         const solanaWeb3 = await import('@solana/web3.js');
         const transaction = solanaWeb3.VersionedTransaction.deserialize(swapTransactionBuf);
         
-        // Send transaction through wallet
-        const signature = await wallet.sendTransaction(transaction, {
-          skipPreflight: false,
-          preflightCommitment: 'confirmed',
-          maxRetries: 3
-        });
+        console.log('Transaction deserialized successfully');
+
+        // Check different wallet methods for sending transactions
+        let signature: string;
+        
+        if (typeof wallet.sendTransaction === 'function') {
+          console.log('Using wallet.sendTransaction method');
+          signature = await wallet.sendTransaction(transaction, {
+            skipPreflight: false,
+            preflightCommitment: 'confirmed',
+            maxRetries: 3
+          });
+        } else if (typeof wallet.signAndSendTransaction === 'function') {
+          console.log('Using wallet.signAndSendTransaction method');
+          signature = await wallet.signAndSendTransaction(transaction);
+        } else if (typeof wallet.signTransaction === 'function') {
+          console.log('Using wallet.signTransaction method with connection');
+          const signedTransaction = await wallet.signTransaction(transaction);
+          
+          // Get connection and send the signed transaction
+          const { getConnection } = await import('@/lib/solana');
+          const connection = await getConnection();
+          signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+            skipPreflight: false,
+            preflightCommitment: 'confirmed',
+            maxRetries: 3
+          });
+        } else {
+          console.error('No suitable transaction method found on wallet');
+          throw new Error('Wallet does not support transaction sending');
+        }
 
         console.log('Swap transaction sent:', signature);
         return signature;
