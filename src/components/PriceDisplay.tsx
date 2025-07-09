@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { ArrowRight, Info, Zap, Clock } from 'lucide-react';
+import { ArrowRight, Info, Zap, Clock, TrendingUp } from 'lucide-react';
 import { Token, formatTokenAmount } from '@/lib/tokens';
 import { getPriceImpactColorClass } from '@/lib/tokens';
 
@@ -46,11 +46,11 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
 }) => {
   if (loading) {
     return (
-      <Card className="dex-card p-4">
-        <div className="flex items-center justify-center py-8">
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 border-2 border-dex-primary border-t-transparent rounded-full loading-spinner" />
-            <span className="text-gray-400">Getting best price...</span>
+      <Card className="raydium-card p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-4">
+            <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full loading-spinner" />
+            <span className="text-purple-300 text-lg font-medium">Getting best price...</span>
           </div>
         </div>
       </Card>
@@ -59,10 +59,13 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
 
   if (!quote) {
     return (
-      <Card className="dex-card p-4">
-        <div className="text-center py-8">
-          <Zap className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400">Enter an amount to see price quote</p>
+      <Card className="raydium-card p-8">
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 neon-glow">
+            <TrendingUp className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-purple-300 text-lg font-medium">Enter an amount to see price quote</p>
+          <p className="text-gray-400 text-sm mt-2">Get the best rates across all DEXs</p>
         </div>
       </Card>
     );
@@ -77,54 +80,58 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   const rate = parseFloat(outputAmount) / parseFloat(inputAmount);
 
   return (
-    <Card className="dex-card p-4 space-y-4">
+    <Card className="raydium-card p-6 space-y-6">
       {/* Main Price Display */}
       <div className="flex items-center justify-between">
         <div className="text-center">
-          <p className="text-2xl font-bold text-white">{parseFloat(inputAmount).toFixed(4)}</p>
-          <p className="text-sm text-gray-400">{fromToken.symbol}</p>
+          <p className="text-3xl font-bold text-white mb-2">{parseFloat(inputAmount).toFixed(4)}</p>
+          <p className="text-purple-300 font-medium">{fromToken.symbol}</p>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <ArrowRight className="w-6 h-6 text-dex-primary" />
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center neon-glow">
+            <ArrowRight className="w-6 h-6 text-white" />
+          </div>
         </div>
         
         <div className="text-center">
-          <p className="text-2xl font-bold text-dex-secondary">{parseFloat(outputAmount).toFixed(4)}</p>
-          <p className="text-sm text-gray-400">{toToken.symbol}</p>
+          <p className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+            {parseFloat(outputAmount).toFixed(4)}
+          </p>
+          <p className="text-purple-300 font-medium">{toToken.symbol}</p>
         </div>
       </div>
 
       {/* Exchange Rate */}
-      <div className="bg-dex-gray/30 rounded-xl p-3">
+      <div className="bg-slate-800/60 rounded-2xl p-4 border border-purple-400/20">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Rate</span>
-          <span className="text-white font-medium">
+          <span className="text-purple-300 font-medium">Exchange Rate</span>
+          <span className="text-white font-bold">
             1 {fromToken.symbol} = {rate.toFixed(6)} {toToken.symbol}
           </span>
         </div>
       </div>
 
       {/* Price Details */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center space-x-2">
-            <Info className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400">Price Impact</span>
+            <Info className="w-4 h-4 text-purple-400" />
+            <span className="text-purple-300 font-medium">Price Impact</span>
           </div>
-          <span className={`font-medium ${getPriceImpactColorClass(priceImpact)}`}>
+          <span className={`font-bold ${getPriceImpactColorClass(priceImpact)}`}>
             {priceImpact < 0.01 ? '< 0.01%' : `${priceImpact.toFixed(2)}%`}
           </span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Max Slippage</span>
-          <span className="text-white">{slippage}%</span>
+          <span className="text-purple-300 font-medium">Max Slippage</span>
+          <span className="text-white font-bold">{slippage}%</span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Minimum Received</span>
-          <span className="text-white">
+          <span className="text-purple-300 font-medium">Minimum Received</span>
+          <span className="text-white font-bold">
             {formatTokenAmount(parseInt(quote.otherAmountThreshold), toToken)} {toToken.symbol}
           </span>
         </div>
@@ -132,17 +139,19 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
 
       {/* Route Information */}
       {quote.routePlan && quote.routePlan.length > 0 && (
-        <div className="border-t border-white/10 pt-4">
-          <div className="flex items-center space-x-2 mb-3">
-            <Clock className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-400">Route via {quote.routePlan.length} step(s)</span>
+        <div className="border-t border-purple-400/20 pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Clock className="w-5 h-5 text-purple-400" />
+            <span className="text-purple-300 font-medium">
+              Route via {quote.routePlan.length} step(s)
+            </span>
           </div>
           
           <div className="space-y-2">
             {quote.routePlan.map((route, index) => (
-              <div key={index} className="flex items-center justify-between text-xs bg-dex-gray/20 rounded-lg p-2">
-                <span className="text-gray-400">{route.swapInfo.label}</span>
-                <span className="text-dex-secondary">{route.percent}%</span>
+              <div key={index} className="flex items-center justify-between text-sm bg-slate-800/40 rounded-xl p-3 border border-purple-400/10">
+                <span className="text-purple-300 font-medium">{route.swapInfo.label}</span>
+                <span className="text-pink-400 font-bold">{route.percent}%</span>
               </div>
             ))}
           </div>
@@ -151,12 +160,12 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
 
       {/* Warning for high price impact */}
       {priceImpact > 5 && (
-        <div className="bg-dex-error/10 border border-dex-error/20 rounded-xl p-3">
-          <div className="flex items-center space-x-2">
-            <Info className="w-4 h-4 text-dex-error" />
-            <span className="text-sm text-dex-error font-medium">High Price Impact Warning</span>
+        <div className="bg-red-500/10 border border-red-400/30 rounded-2xl p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <Info className="w-5 h-5 text-red-400" />
+            <span className="text-red-400 font-bold">High Price Impact Warning</span>
           </div>
-          <p className="text-xs text-dex-error/80 mt-1">
+          <p className="text-red-300 text-sm">
             This trade has a high price impact. You may receive significantly less tokens than expected.
           </p>
         </div>

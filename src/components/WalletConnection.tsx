@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Wallet, LogOut, Copy, ExternalLink, RefreshCw } from 'lucide-react';
+import { Wallet, LogOut, Copy, ExternalLink, RefreshCw, Zap } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner';
 
@@ -23,7 +23,7 @@ export const WalletConnection: React.FC = () => {
       toast.success('Wallet disconnected');
     } catch (error) {
       console.error('Disconnect error:', error);
-      toast.success('Wallet disconnected'); // Show success even if there's an error
+      toast.success('Wallet disconnected');
     }
   };
 
@@ -55,16 +55,16 @@ export const WalletConnection: React.FC = () => {
 
   if (connected && walletAddress) {
     return (
-      <Card className="dex-card p-4 space-y-4">
+      <Card className="raydium-card p-6 space-y-6">
         {/* Wallet Info Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-dex rounded-full flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center neon-glow">
+              <Wallet className="w-7 h-7 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-400">Connected</p>
-              <p className="font-semibold text-white">{formatAddress(walletAddress)}</p>
+              <p className="text-sm text-purple-300 font-medium">Connected Wallet</p>
+              <p className="font-bold text-white text-lg">{formatAddress(walletAddress)}</p>
             </div>
           </div>
           
@@ -73,43 +73,43 @@ export const WalletConnection: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={copyAddress}
-              className="text-gray-400 hover:text-white p-2"
+              className="text-purple-300 hover:text-white hover:bg-purple-500/20 p-3 rounded-xl"
               title="Copy Address"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-5 h-5" />
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={openInExplorer}
-              className="text-gray-400 hover:text-white p-2"
+              className="text-purple-300 hover:text-white hover:bg-purple-500/20 p-3 rounded-xl"
               title="View in Explorer"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-5 h-5" />
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDisconnect}
-              className="text-red-400 hover:text-red-300 p-2"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 p-3 rounded-xl"
               title="Disconnect Wallet"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
 
         {/* Balance Display */}
-        <div className="bg-dex-gray/30 rounded-xl p-3">
+        <div className="bg-slate-800/60 rounded-2xl p-6 border border-purple-400/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">SOL Balance</p>
-              <p className="text-lg font-semibold text-white">
+              <p className="text-sm text-purple-300 font-medium mb-2">SOL Balance</p>
+              <p className="text-2xl font-bold text-white">
                 {balanceLoading ? (
-                  <span className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-dex-primary border-t-transparent rounded-full loading-spinner" />
+                  <span className="flex items-center space-x-3">
+                    <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full loading-spinner" />
                     <span>Loading...</span>
                   </span>
                 ) : solBalance !== null ? (
@@ -124,15 +124,15 @@ export const WalletConnection: React.FC = () => {
               size="sm"
               onClick={handleRefreshBalance}
               disabled={balanceLoading}
-              className="text-gray-400 hover:text-white disabled:opacity-50 p-2"
+              className="text-purple-300 hover:text-white hover:bg-purple-500/20 disabled:opacity-50 p-3 rounded-xl"
               title="Refresh Balance"
             >
-              <RefreshCw className={`w-4 h-4 ${balanceLoading ? 'loading-spinner' : ''}`} />
+              <RefreshCw className={`w-5 h-5 ${balanceLoading ? 'loading-spinner' : ''}`} />
             </Button>
           </div>
           
           {solBalance === null && !balanceLoading && (
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-2">
               RPC rate limited. Click refresh to retry.
             </p>
           )}
@@ -142,25 +142,28 @@ export const WalletConnection: React.FC = () => {
   }
 
   return (
-    <Card className="dex-card p-6 text-center">
-      <div className="mb-4">
-        <div className="w-16 h-16 bg-gradient-dex rounded-full flex items-center justify-center mx-auto mb-4">
-          <Wallet className="w-8 h-8 text-white" />
+    <Card className="raydium-card p-8 text-center">
+      <div className="mb-8">
+        <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 neon-glow">
+          <Zap className="w-10 h-10 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
-        <p className="text-gray-400 text-sm">
-          Connect your Solana wallet to start trading on mainnet
+        <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+          Connect Wallet
+        </h3>
+        <p className="text-gray-400 text-lg leading-relaxed">
+          Connect your Solana wallet to start trading<br />
+          <span className="text-purple-300">Experience the future of DeFi</span>
         </p>
       </div>
       
       <Button
         onClick={handleConnect}
         disabled={connecting}
-        className="dex-button w-full"
+        className="raydium-button w-full text-xl"
       >
         {connecting ? (
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full loading-spinner" />
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full loading-spinner" />
             <span>Connecting...</span>
           </div>
         ) : (
@@ -168,7 +171,7 @@ export const WalletConnection: React.FC = () => {
         )}
       </Button>
       
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-sm text-purple-300/80 mt-6">
         Supports Phantom, Solflare, and other Solana wallets
       </p>
     </Card>

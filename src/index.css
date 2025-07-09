@@ -52,7 +52,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    background: linear-gradient(135deg, #0D0E14 0%, #08090C 100%);
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
     min-height: 100vh;
   }
 
@@ -66,62 +66,93 @@
     @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)];
   }
 
-  .dex-card {
-    @apply bg-gradient-to-br from-dex-gray/50 to-dex-gray-light/30 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl;
+  .raydium-card {
+    @apply bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border border-purple-500/20 rounded-3xl shadow-2xl;
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  .dex-button {
-    @apply bg-gradient-to-r from-dex-primary to-dex-secondary hover:from-dex-primary/80 hover:to-dex-secondary/80 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95;
+  .raydium-button {
+    @apply bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 hover:from-purple-500 hover:via-pink-400 hover:to-purple-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
-  .dex-input {
-    @apply bg-dex-gray/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-dex-primary focus:ring-2 focus:ring-dex-primary/20 transition-all duration-300;
+  .raydium-button:disabled {
+    @apply bg-gradient-to-r from-gray-600 to-gray-700 cursor-not-allowed opacity-50;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .raydium-input {
+    @apply bg-slate-800/50 border border-purple-400/30 rounded-2xl px-6 py-4 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-300;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   .token-logo {
-    @apply w-8 h-8 rounded-full object-cover border-2 border-white/20;
+    @apply w-10 h-10 rounded-full object-cover border-2 border-purple-400/30;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
   }
 
   .price-impact-low {
-    @apply text-dex-success;
+    @apply text-green-400;
   }
 
   .price-impact-medium {
-    @apply text-dex-warning;
+    @apply text-yellow-400;
   }
 
   .price-impact-high {
-    @apply text-dex-error;
+    @apply text-red-400;
   }
 
-  .glow-effect {
-    @apply shadow-[0_0_20px_rgba(153,69,255,0.3)] hover:shadow-[0_0_30px_rgba(153,69,255,0.5)] transition-shadow duration-300;
+  .neon-glow {
+    @apply shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:shadow-[0_0_40px_rgba(139,92,246,0.7)] transition-shadow duration-300;
+  }
+
+  .raydium-header {
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 50%, rgba(139, 92, 246, 0.1) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  }
+
+  .raydium-bg {
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+      linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Raydium style */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #9945FF, #14F195);
-  border-radius: 3px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #8A3FE8, #12D188);
+  background: linear-gradient(135deg, #7c3aed, #db2777);
 }
 
-/* Loading animation */
+/* Loading animation - Raydium style */
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-neon {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
   }
 }
 
@@ -129,16 +160,14 @@
   animation: spin 1s linear infinite;
 }
 
-/* Pulse animation for connecting states */
-@keyframes pulse-connect {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
 }
 
-.pulse-connect {
-  animation: pulse-connect 2s ease-in-out infinite;
+/* Retro grid background effect */
+.retro-grid {
+  background-image: 
+    linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
