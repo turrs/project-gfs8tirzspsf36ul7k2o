@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getConnection, getTokenBalance, COMMON_TOKENS } from '@/lib/solana';
+import { getConnection, getTokenBalance } from '@/lib/solana';
+import { COMMON_TOKENS } from '@/lib/tokens';
 
 interface WalletAdapter {
   publicKey: any;
