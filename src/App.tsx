@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import React from "react";
+// Import buffer polyfill
+import "./lib/buffer-polyfill";
 
 const queryClient = new QueryClient({
   defaultOptions: {

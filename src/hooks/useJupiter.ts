@@ -43,6 +43,9 @@ interface UseJupiterReturn {
   resetQuote: () => void;
 }
 
+// Import Buffer polyfill for browser environment
+import { Buffer } from 'buffer';
+
 export const useJupiter = (): UseJupiterReturn => {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -148,38 +151,32 @@ export const useJupiter = (): UseJupiterReturn => {
         throw new Error('No swap transaction returned');
       }
 
-      // Handle Buffer polyfill issue
-      let transaction;
+      // Use Buffer from the imported polyfill
       try {
-        // Try to use the global Buffer if available
-        const BufferPolyfill = (globalThis as any).Buffer || (window as any).Buffer;
-        if (!BufferPolyfill) {
-          throw new Error('Buffer not available');
-        }
+        // Create a buffer from the base64 transaction
+        const swapTransactionBuf = Buffer.from(swapData.swapTransaction, 'base64');
         
-        const swapTransactionBuf = BufferPolyfill.from(swapData.swapTransaction, 'base64');
+        // Dynamically import Solana Web3.js
+        const solanaWeb3 = await import('@solana/web3.js');
+        const transaction = solanaWeb3.VersionedTransaction.deserialize(swapTransactionBuf);
         
-        // Dynamically import Solana Web3.js to avoid initial loading issues
-        const { VersionedTransaction } = await import('@solana/web3.js');
-        transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+        // Send transaction through wallet
+        const signature = await wallet.sendTransaction(transaction, {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed',
+          maxRetries: 3
+        });
+
+        console.log('Swap transaction sent:', signature);
+        return signature;
       } catch (bufferError) {
-        console.error('Buffer/deserialization error:', bufferError);
+        console.error('Transaction processing error:', bufferError);
         throw new Error('Failed to process transaction. Please try again.');
       }
-
-      // Send transaction through wallet
-      const signature = await wallet.sendTransaction(transaction, {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-        maxRetries: 3
-      });
-
-      console.log('Swap transaction sent:', signature);
-      return signature;
-
     } catch (err) {
       console.error('Error executing swap:', err);
-      setError(err instanceof Error ? err.message : 'Failed to execute swap');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to execute swap';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
