@@ -1,9 +1,9 @@
-// This file provides a Buffer polyfill for the browser environment
-import { Buffer as BufferPolyfill } from 'buffer';
+import { Buffer } from 'buffer';
 
-// Make Buffer available globally
+// Make Buffer available globally for browser environment
 if (typeof window !== 'undefined') {
-  (window as any).Buffer = BufferPolyfill;
+  (window as any).Buffer = Buffer;
+  (window as any).global = window;
 }
 
-export { BufferPolyfill as Buffer };
+export { Buffer };

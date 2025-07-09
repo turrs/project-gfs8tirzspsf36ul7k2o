@@ -8,6 +8,13 @@ export interface Token {
   verified?: boolean;
 }
 
+// Common token addresses for easy reference
+export const COMMON_TOKENS = {
+  SOL: 'So11111111111111111111111111111111111111112',
+  USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+};
+
 // Popular tokens on Solana Mainnet that are tradable on Jupiter
 export const POPULAR_TOKENS: Token[] = [
   {
