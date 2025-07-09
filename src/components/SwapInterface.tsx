@@ -96,7 +96,17 @@ export const SwapInterface: React.FC = () => {
     }
   };
 
-  const canSwap = connected && quote && fromAmount && !loading && !isSwapping;
+  // Check if user has enough balance for the swap
+  const hasEnoughBalance = () => {
+    if (fromToken.symbol === 'SOL' && solBalance !== null && fromAmount) {
+      // Need to leave some SOL for transaction fees
+      return parseFloat(fromAmount) <= solBalance - 0.01;
+    }
+    // For other tokens, we would need to implement balance checking
+    return true;
+  };
+
+  const canSwap = connected && quote && fromAmount && !loading && !isSwapping && hasEnoughBalance();
 
   return (
     <div className="space-y-4">
@@ -205,6 +215,13 @@ export const SwapInterface: React.FC = () => {
             </div>
           )}
 
+          {/* Insufficient Balance Warning */}
+          {fromToken.symbol === 'SOL' && solBalance !== null && parseFloat(fromAmount) > solBalance - 0.01 && (
+            <div className="bg-dex-warning/10 border border-dex-warning/20 rounded-xl p-3">
+              <p className="text-sm text-dex-warning">Insufficient balance. You need to keep at least 0.01 SOL for transaction fees.</p>
+            </div>
+          )}
+
           {/* Swap Button */}
           <Button
             onClick={handleSwap}
@@ -215,6 +232,7 @@ export const SwapInterface: React.FC = () => {
              loading ? 'Getting Quote...' :
              isSwapping ? 'Swapping...' :
              !fromAmount ? 'Enter Amount' :
+             !hasEnoughBalance() ? 'Insufficient Balance' :
              !quote ? 'Invalid Pair' :
              'Swap'}
           </Button>

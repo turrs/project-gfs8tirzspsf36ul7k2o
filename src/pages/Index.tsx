@@ -2,7 +2,7 @@ import React from 'react';
 import { WalletConnection } from '@/components/WalletConnection';
 import { SwapInterface } from '@/components/SwapInterface';
 import { useWallet } from '@/hooks/useWallet';
-import { Zap, TrendingUp, Shield, Clock } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 const Index = () => {
   const { connected } = useWallet();
@@ -25,7 +25,7 @@ const Index = () => {
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">SolDEX</h1>
+                  <h1 className="text-xl font-bold text-white">solanavibes2021</h1>
                   <p className="text-xs text-gray-400">Powered by Jupiter</p>
                 </div>
               </div>
@@ -41,139 +41,12 @@ const Index = () => {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Features */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Welcome Section */}
-              <div className="dex-card p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  Welcome to SolDEX
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  The fastest and most efficient way to swap tokens on Solana. 
-                  Powered by Jupiter's advanced routing technology.
-                </p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-dex-primary/20 rounded-lg flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-dex-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Best Prices</h4>
-                      <p className="text-sm text-gray-400">Aggregated from all DEXs</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-dex-secondary/20 rounded-lg flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-dex-secondary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Fast Execution</h4>
-                      <p className="text-sm text-gray-400">Lightning-fast swaps</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-dex-accent/20 rounded-lg flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-dex-accent" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Secure</h4>
-                      <p className="text-sm text-gray-400">Non-custodial trading</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="dex-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Platform Stats</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-dex-primary">$2.1B+</div>
-                    <div className="text-sm text-gray-400">Volume (24h)</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-dex-secondary">150K+</div>
-                    <div className="text-sm text-gray-400">Users</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-dex-accent">500+</div>
-                    <div className="text-sm text-gray-400">Tokens</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">99.9%</div>
-                    <div className="text-sm text-gray-400">Uptime</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Center Column - Swap Interface */}
-            <div className="lg:col-span-1">
-              {!connected ? (
-                <WalletConnection />
-              ) : (
-                <SwapInterface />
-              )}
-            </div>
-
-            {/* Right Column - Additional Info */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Market Trends */}
-              <div className="dex-card p-6">
-                <div className="flex items-center space-x-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-dex-secondary" />
-                  <h3 className="text-lg font-semibold text-white">Trending Tokens</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { symbol: 'SOL', name: 'Solana', change: '+5.2%', price: '$98.45' },
-                    { symbol: 'JUP', name: 'Jupiter', change: '+8.4%', price: '$0.85' },
-                    { symbol: 'WIF', name: 'dogwifhat', change: '+15.2%', price: '$2.34' },
-                  ].map((token, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-dex-gray/20 rounded-xl">
-                      <div>
-                        <div className="font-semibold text-white">{token.symbol}</div>
-                        <div className="text-sm text-gray-400">{token.name}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-white">{token.price}</div>
-                        <div className={`text-sm ${token.change.startsWith('+') ? 'text-dex-success' : 'text-dex-error'}`}>
-                          {token.change}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="dex-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Recent Swaps</h3>
-                <div className="space-y-3">
-                  {[
-                    { from: 'SOL', to: 'USDC', amount: '2.5', time: '2m ago' },
-                    { from: 'USDC', to: 'JUP', amount: '100', time: '5m ago' },
-                    { from: 'WIF', to: 'SOL', amount: '50', time: '8m ago' },
-                  ].map((swap, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-dex-gray/20 rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-medium">{swap.amount} {swap.from}</span>
-                        <span className="text-gray-400">→</span>
-                        <span className="text-dex-secondary font-medium">{swap.to}</span>
-                      </div>
-                      <span className="text-sm text-gray-400">{swap.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+        <main className="max-w-md mx-auto px-4 py-8">
+          {!connected ? (
+            <WalletConnection />
+          ) : (
+            <SwapInterface />
+          )}
         </main>
 
         {/* Footer */}
