@@ -53,7 +53,7 @@ export const useWallet = (): UseWalletReturn => {
     return null;
   }, []);
 
-  // Function to get SOL balance using Alchemy API
+  // Function to get SOL balance with improved error handling and retries
   const refreshBalance = useCallback(async () => {
     if (!publicKey || !connected) {
       setSolBalance(null);
@@ -62,22 +62,29 @@ export const useWallet = (): UseWalletReturn => {
 
     setBalanceLoading(true);
     try {
-      console.log('Fetching balance using Alchemy API for:', publicKey.toString());
-      const balance = await getTokenBalance(publicKey.toString(), COMMON_TOKENS.SOL);
+      console.log('Fetching balance for:', publicKey.toString());
+      
+      // Try to get connection
+      const connection = await getConnection();
+      
+      // Get SOL balance directly from connection
+      const balance = await connection.getBalance(publicKey);
       const solAmount = balance / 1e9; // Convert lamports to SOL
+      
+      console.log('SOL Balance fetched successfully:', solAmount);
       setSolBalance(solAmount);
-      console.log('SOL Balance updated successfully:', solAmount);
     } catch (error) {
       console.error('Error fetching balance:', error);
-      setSolBalance(null);
       
-      // Show user-friendly error message
-      if (error instanceof Error) {
-        if (error.message.includes('403') || error.message.includes('forbidden')) {
-          console.warn('API rate limit or access issue, balance will be retried later');
-        } else {
-          console.warn('Balance fetch failed:', error.message);
-        }
+      // Try fallback method
+      try {
+        const balance = await getTokenBalance(publicKey.toString(), COMMON_TOKENS.SOL);
+        const solAmount = balance / 1e9;
+        setSolBalance(solAmount);
+        console.log('SOL Balance fetched using fallback:', solAmount);
+      } catch (fallbackError) {
+        console.error('Fallback balance fetch failed:', fallbackError);
+        setSolBalance(null);
       }
     } finally {
       setBalanceLoading(false);
@@ -139,7 +146,7 @@ export const useWallet = (): UseWalletReturn => {
     };
   }, [getWallet]);
 
-  // Refresh balance when wallet connects (reduced delay since using Alchemy)
+  // Refresh balance when wallet connects
   useEffect(() => {
     if (connected && publicKey) {
       // Add a small delay to avoid immediate requests

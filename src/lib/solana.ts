@@ -5,7 +5,8 @@ const ALCHEMY_RPC_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/U0EeAoRs5S
 const FALLBACK_RPC_ENDPOINTS = [
   'https://api.mainnet-beta.solana.com',
   'https://solana-api.projectserum.com',
-  'https://rpc.ankr.com/solana'
+  'https://rpc.ankr.com/solana',
+  'https://solana.public-rpc.com'
 ];
 
 export const SOLANA_RPC_ENDPOINT = ALCHEMY_RPC_ENDPOINT;
@@ -74,32 +75,37 @@ export const formatTokenAmount = (amount: number, decimals: number): string => {
   return (amount / Math.pow(10, decimals)).toFixed(6);
 };
 
-// Helper function to get token balance using Alchemy API with retry logic
+// Helper function to get token balance using direct connection with retry logic
 export const getTokenBalance = async (
   walletAddress: string,
   tokenMint: string,
-  retries: number = 2
+  retries: number = 3
 ): Promise<number> => {
+  let lastError: Error | null = null;
+  
   for (let i = 0; i < retries; i++) {
     try {
+      const { PublicKey } = await import('@solana/web3.js');
+      const publicKey = new PublicKey(walletAddress);
+      
       if (tokenMint === COMMON_TOKENS.SOL) {
-        const { PublicKey } = await import('@solana/web3.js');
-        
-        // Use Alchemy connection first
-        try {
-          const connection = new (await import('@solana/web3.js')).Connection(ALCHEMY_RPC_ENDPOINT, 'confirmed');
-          const balance = await connection.getBalance(new PublicKey(walletAddress));
-          console.log(`Balance fetched successfully using Alchemy: ${balance} lamports`);
-          return balance;
-        } catch (alchemyError) {
-          console.warn('Alchemy balance fetch failed, trying fallback:', alchemyError);
-          
-          // Try fallback connection
-          const connection = await getConnection();
-          const balance = await connection.getBalance(new PublicKey(walletAddress));
-          console.log(`Balance fetched successfully using fallback: ${balance} lamports`);
-          return balance;
+        // Try each endpoint until one works
+        for (const endpoint of [ALCHEMY_RPC_ENDPOINT, ...FALLBACK_RPC_ENDPOINTS]) {
+          try {
+            const { Connection } = await import('@solana/web3.js');
+            const connection = new Connection(endpoint, 'confirmed');
+            const balance = await connection.getBalance(publicKey);
+            console.log(`Balance fetched successfully using ${endpoint}: ${balance} lamports`);
+            return balance;
+          } catch (endpointError) {
+            console.warn(`Balance fetch failed with ${endpoint}:`, endpointError);
+            lastError = endpointError as Error;
+            // Continue to next endpoint
+          }
         }
+        
+        // If we get here, all endpoints failed
+        throw lastError || new Error('All RPC endpoints failed');
       }
       
       // For SPL tokens, we would need to get token account balance
@@ -107,14 +113,17 @@ export const getTokenBalance = async (
       return 0;
     } catch (error) {
       console.error(`Balance fetch attempt ${i + 1} failed:`, error);
+      lastError = error as Error;
+      
       if (i === retries - 1) {
         throw error;
       }
-      // Wait before retrying (shorter delay since we're using Alchemy)
+      // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
     }
   }
-  return 0;
+  
+  throw lastError || new Error('Failed to fetch balance after multiple attempts');
 };
 
 // Helper function to send transaction
