@@ -53,7 +53,7 @@ export const useWallet = (): UseWalletReturn => {
     return null;
   }, []);
 
-  // Function to get SOL balance with improved error handling
+  // Function to get SOL balance using Alchemy API
   const refreshBalance = useCallback(async () => {
     if (!publicKey || !connected) {
       setSolBalance(null);
@@ -62,18 +62,22 @@ export const useWallet = (): UseWalletReturn => {
 
     setBalanceLoading(true);
     try {
-      console.log('Fetching balance for:', publicKey.toString());
+      console.log('Fetching balance using Alchemy API for:', publicKey.toString());
       const balance = await getTokenBalance(publicKey.toString(), COMMON_TOKENS.SOL);
       const solAmount = balance / 1e9; // Convert lamports to SOL
       setSolBalance(solAmount);
-      console.log('SOL Balance updated:', solAmount);
+      console.log('SOL Balance updated successfully:', solAmount);
     } catch (error) {
       console.error('Error fetching balance:', error);
       setSolBalance(null);
       
       // Show user-friendly error message
-      if (error instanceof Error && error.message.includes('403')) {
-        console.warn('RPC rate limit reached, balance will be retried later');
+      if (error instanceof Error) {
+        if (error.message.includes('403') || error.message.includes('forbidden')) {
+          console.warn('API rate limit or access issue, balance will be retried later');
+        } else {
+          console.warn('Balance fetch failed:', error.message);
+        }
       }
     } finally {
       setBalanceLoading(false);
@@ -135,13 +139,13 @@ export const useWallet = (): UseWalletReturn => {
     };
   }, [getWallet]);
 
-  // Refresh balance when wallet connects with delay to avoid immediate rate limiting
+  // Refresh balance when wallet connects (reduced delay since using Alchemy)
   useEffect(() => {
     if (connected && publicKey) {
-      // Add a small delay to avoid immediate rate limiting
+      // Add a small delay to avoid immediate requests
       const timer = setTimeout(() => {
         refreshBalance();
-      }, 1000);
+      }, 500);
       
       return () => clearTimeout(timer);
     }
