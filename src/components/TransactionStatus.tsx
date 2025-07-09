@@ -63,6 +63,26 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
     }
   };
 
+  // Format signature for display, handling different possible formats
+  const formatSignature = (sig: any): string => {
+    if (!sig) return '';
+    
+    // Handle case where signature is an object with signature property (from wallet.signAndSendTransaction)
+    if (typeof sig === 'object' && sig.signature) {
+      return sig.signature;
+    }
+    
+    // Convert to string if it's not already
+    const sigString = String(sig);
+    
+    // If it's a long string, truncate it for display
+    if (sigString.length > 40) {
+      return `${sigString.slice(0, 20)}...${sigString.slice(-20)}`;
+    }
+    
+    return sigString;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="dex-card max-w-md">
@@ -88,7 +108,7 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
               <div className="bg-dex-gray/30 rounded-xl p-3 mt-4">
                 <p className="text-xs text-gray-400 mb-2">Transaction Signature:</p>
                 <p className="text-xs font-mono text-white break-all">
-                  {signature.slice(0, 20)}...{signature.slice(-20)}
+                  {formatSignature(signature)}
                 </p>
               </div>
             )}

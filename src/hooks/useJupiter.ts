@@ -173,16 +173,21 @@ export const useJupiter = (): UseJupiterReturn => {
         // Check different wallet methods for sending transactions
         let signature: string;
         
-        if (typeof wallet.sendTransaction === 'function') {
+        if (typeof wallet.signAndSendTransaction === 'function') {
+          console.log('Using wallet.signAndSendTransaction method');
+          const result = await wallet.signAndSendTransaction(transaction);
+          // Handle different response formats
+          signature = typeof result === 'object' && result.signature 
+            ? result.signature 
+            : String(result);
+        } else if (typeof wallet.sendTransaction === 'function') {
           console.log('Using wallet.sendTransaction method');
-          signature = await wallet.sendTransaction(transaction, {
+          const result = await wallet.sendTransaction(transaction, {
             skipPreflight: false,
             preflightCommitment: 'confirmed',
             maxRetries: 3
           });
-        } else if (typeof wallet.signAndSendTransaction === 'function') {
-          console.log('Using wallet.signAndSendTransaction method');
-          signature = await wallet.signAndSendTransaction(transaction);
+          signature = String(result);
         } else if (typeof wallet.signTransaction === 'function') {
           console.log('Using wallet.signTransaction method with connection');
           const signedTransaction = await wallet.signTransaction(transaction);

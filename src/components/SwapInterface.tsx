@@ -28,15 +28,17 @@ export const SwapInterface: React.FC = () => {
 
   // Get quote when amount or tokens change
   useEffect(() => {
-    if (fromAmount && isValidTokenAmount(fromAmount) && fromToken && toToken) {
-      const debounceTimer = setTimeout(() => {
-        getQuote(fromToken, toToken, fromAmount, slippage * 100);
-      }, 500);
-
-      return () => clearTimeout(debounceTimer);
-    } else {
+    if (!fromAmount || parseFloat(fromAmount) <= 0 || !fromToken || !toToken) {
       resetQuote();
+      return;
     }
+
+    // Debounce the quote request
+    const handler = setTimeout(() => {
+      getQuote(fromToken, toToken, fromAmount, slippage * 100);
+    }, 500);
+
+    return () => clearTimeout(handler);
   }, [fromAmount, fromToken, toToken, slippage, getQuote, resetQuote]);
 
   const handleSwapTokens = () => {
@@ -74,7 +76,17 @@ export const SwapInterface: React.FC = () => {
 
     try {
       const signature = await executeSwap(wallet);
-      setTransactionSignature(signature);
+      console.log('Swap transaction sent:', signature);
+      
+      // Store the signature as a string
+      if (typeof signature === 'object' && signature.signature) {
+        setTransactionSignature(signature.signature);
+      } else if (typeof signature === 'string') {
+        setTransactionSignature(signature);
+      } else {
+        setTransactionSignature(String(signature));
+      }
+      
       setTransactionStatus('success');
       toast.success('Swap completed successfully!');
       
