@@ -1,163 +1,139 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, Star, Verified } from 'lucide-react';
-import { Token, POPULAR_TOKENS } from '@/lib/tokens';
+import { Search } from 'lucide-react';
+import { Token, COMMON_TOKENS } from '@/lib/tokens';
 
 interface TokenSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectToken: (token: Token) => void;
-  selectedToken?: Token;
-  title?: string;
+  selectedToken: Token;
+  title: string;
 }
+
+// Sample token list - in a real app, you'd fetch this from an API
+const tokenList: Token[] = [
+  {
+    symbol: 'SOL',
+    name: 'Solana',
+    address: COMMON_TOKENS.SOL,
+    decimals: 9,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
+  },
+  {
+    symbol: 'USDC',
+    name: 'USD Coin',
+    address: COMMON_TOKENS.USDC,
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
+  },
+  {
+    symbol: 'USDT',
+    name: 'Tether USD',
+    address: COMMON_TOKENS.USDT,
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.png'
+  },
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin (Sollet)',
+    address: '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E/logo.png'
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum (Sollet)',
+    address: '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk/logo.png'
+  },
+  {
+    symbol: 'SRM',
+    name: 'Serum',
+    address: 'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt',
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt/logo.png'
+  },
+  {
+    symbol: 'RAY',
+    name: 'Raydium',
+    address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png'
+  }
+];
 
 export const TokenSelector: React.FC<TokenSelectorProps> = ({
   isOpen,
   onClose,
   onSelectToken,
   selectedToken,
-  title = 'Select Token'
+  title
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTokens = POPULAR_TOKENS.filter(token =>
+  const filteredTokens = tokenList.filter(token => 
     token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    token.address.toLowerCase().includes(searchQuery.toLowerCase())
+    token.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSelectToken = (token: Token) => {
     onSelectToken(token);
     onClose();
-    setSearchQuery('');
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="dex-card max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-white text-xl">{title}</DialogTitle>
+      <DialogContent className="bg-[#1C1C28] border-[#2A2A3A] text-white max-w-md w-full p-0 rounded-2xl">
+        <DialogHeader className="p-4 border-b border-[#2A2A3A]">
+          <DialogTitle className="text-white">{title}</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* Search Input */}
+        <div className="p-4 border-b border-[#2A2A3A]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search by name, symbol, or address"
+              placeholder="Search by token name or symbol"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="dex-input pl-10"
+              className="pl-10 bg-[#2A2A3A] border-[#3A3A4A] text-white placeholder:text-gray-500 rounded-xl"
             />
           </div>
-
-          {/* Popular Tokens */}
-          {!searchQuery && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
-                <Star className="w-4 h-4 mr-2" />
-                Popular Tokens
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {POPULAR_TOKENS.slice(0, 4).map((token) => (
-                  <Button
-                    key={token.address}
-                    variant="ghost"
-                    onClick={() => handleSelectToken(token)}
-                    className="h-auto p-3 justify-start bg-dex-gray/30 hover:bg-dex-gray/50 border border-white/10"
-                    disabled={selectedToken?.address === token.address}
-                  >
-                    <div className="flex items-center space-x-2">
-                      {token.logoURI && (
-                        <img
-                          src={token.logoURI}
-                          alt={token.symbol}
-                          className="token-logo"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <div className="text-left">
-                        <div className="flex items-center space-x-1">
-                          <span className="font-semibold text-white text-sm">{token.symbol}</span>
-                          {token.verified && (
-                            <Verified className="w-3 h-3 text-dex-secondary" />
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-400">{token.name}</span>
-                      </div>
-                    </div>
-                  </Button>
-                ))}
+        </div>
+        
+        <div className="max-h-[60vh] overflow-y-auto p-2">
+          {filteredTokens.map((token) => (
+            <div
+              key={token.address}
+              onClick={() => handleSelectToken(token)}
+              className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-[#2A2A3A] ${
+                selectedToken.address === token.address ? 'bg-[#2A2A3A]' : ''
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                {token.logoURI && (
+                  <img
+                    src={token.logoURI}
+                    alt={token.symbol}
+                    className="w-8 h-8 rounded-full"
+                  />
+                )}
+                <div>
+                  <p className="font-medium text-white">{token.symbol}</p>
+                  <p className="text-sm text-gray-400">{token.name}</p>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <p className="text-sm text-gray-400">Balance</p>
+                <p className="font-medium text-white">
+                  {token.symbol === 'SOL' ? '0.0000' : '0.00'}
+                </p>
               </div>
             </div>
-          )}
-
-          {/* Token List */}
-          <div className="max-h-80 overflow-y-auto space-y-1">
-            {filteredTokens.map((token) => (
-              <Button
-                key={token.address}
-                variant="ghost"
-                onClick={() => handleSelectToken(token)}
-                className="w-full h-auto p-4 justify-start hover:bg-dex-gray/30 border border-transparent hover:border-white/10 rounded-xl"
-                disabled={selectedToken?.address === token.address}
-              >
-                <div className="flex items-center space-x-3 w-full">
-                  {token.logoURI && (
-                    <img
-                      src={token.logoURI}
-                      alt={token.symbol}
-                      className="token-logo"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-white">{token.symbol}</span>
-                        {token.verified && (
-                          <Verified className="w-4 h-4 text-dex-secondary" />
-                        )}
-                      </div>
-                      {token.tags && token.tags.length > 0 && (
-                        <div className="flex space-x-1">
-                          {token.tags.slice(0, 2).map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-1 text-xs bg-dex-primary/20 text-dex-primary rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm text-gray-400">{token.name}</span>
-                      <span className="text-xs text-gray-500 font-mono">
-                        {token.address.slice(0, 6)}...{token.address.slice(-4)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Button>
-            ))}
-          </div>
-
-          {filteredTokens.length === 0 && searchQuery && (
-            <div className="text-center py-8">
-              <p className="text-gray-400">No tokens found matching "{searchQuery}"</p>
-              <p className="text-sm text-gray-500 mt-2">
-                Try searching by symbol, name, or contract address
-              </p>
-            </div>
-          )}
+          ))}
         </div>
       </DialogContent>
     </Dialog>

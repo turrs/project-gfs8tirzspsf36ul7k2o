@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowUpDown, Settings, ChevronDown, Zap, RefreshCw } from 'lucide-react';
 import { TokenSelector } from './TokenSelector';
-import { PriceDisplay } from './PriceDisplay';
 import { TransactionStatus } from './TransactionStatus';
 import { useWallet } from '@/hooks/useWallet';
 import { useJupiter } from '@/hooks/useJupiter';
@@ -25,7 +24,6 @@ export const SwapInterface: React.FC = () => {
   const [transactionStatus, setTransactionStatus] = useState<'pending' | 'success' | 'error' | null>(null);
   const [transactionSignature, setTransactionSignature] = useState<string>('');
   const [transactionError, setTransactionError] = useState<string>('');
-  const [swapMode, setSwapMode] = useState<'instant' | 'trigger' | 'recurring'>('instant');
 
   // Get quote when amount or tokens change
   useEffect(() => {
@@ -132,43 +130,18 @@ export const SwapInterface: React.FC = () => {
     return parseFloat(amount || '0') * price;
   };
 
+  // Get token balance based on selected token
+  const getTokenBalance = () => {
+    if (fromToken.symbol === 'SOL') {
+      return solBalance !== null ? `${solBalance.toFixed(4)} SOL` : 'Loading...';
+    }
+    return 'Balance: 0.00'; // Placeholder for other tokens
+  };
+
   return (
     <div className="space-y-6">
       {/* Main Swap Card - New Design */}
       <Card className="bg-[#1C1C28] border-[#2A2A3A] rounded-2xl overflow-hidden">
-        {/* Swap Mode Selector */}
-        <div className="flex p-4 border-b border-[#2A2A3A]">
-          <div className="flex space-x-4 w-full">
-            <Button 
-              variant={swapMode === 'instant' ? 'default' : 'ghost'}
-              onClick={() => setSwapMode('instant')}
-              className={`rounded-full px-6 ${swapMode === 'instant' ? 'bg-[#2B3B1C] text-[#9AE462] hover:bg-[#2B3B1C]/90' : 'text-gray-400 hover:bg-[#2A2A3A]/50'}`}
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Instant
-            </Button>
-            <Button 
-              variant={swapMode === 'trigger' ? 'default' : 'ghost'}
-              onClick={() => setSwapMode('trigger')}
-              className={`rounded-full px-6 ${swapMode === 'trigger' ? 'bg-[#2B3B1C] text-[#9AE462] hover:bg-[#2B3B1C]/90' : 'text-gray-400 hover:bg-[#2A2A3A]/50'}`}
-            >
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 9H4L4 20H10V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M20 4H14V20H20V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Trigger
-            </Button>
-            <Button 
-              variant={swapMode === 'recurring' ? 'default' : 'ghost'}
-              onClick={() => setSwapMode('recurring')}
-              className={`rounded-full px-6 ${swapMode === 'recurring' ? 'bg-[#2B3B1C] text-[#9AE462] hover:bg-[#2B3B1C]/90' : 'text-gray-400 hover:bg-[#2A2A3A]/50'}`}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Recurring
-            </Button>
-          </div>
-        </div>
-
         {/* Settings Bar */}
         <div className="flex items-center justify-between p-4 border-b border-[#2A2A3A]">
           <div className="flex items-center space-x-2">
@@ -187,7 +160,10 @@ export const SwapInterface: React.FC = () => {
         {/* From Token Section */}
         <div className="p-6 bg-[#1A1A25] border-b border-[#2A2A3A]">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-400">Selling</span>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-400">Selling</span>
+              <span className="text-xs text-gray-500 mt-1">{getTokenBalance()}</span>
+            </div>
             <div className="flex items-center space-x-2">
               <Button 
                 variant="outline" 
