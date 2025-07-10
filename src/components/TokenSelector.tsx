@@ -69,7 +69,8 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
   title
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { walletAddress, connected } = useWallet();
+  const { publicKey, connected } = useWallet();
+  const walletAddress = publicKey ? publicKey.toBase58() : null;
   const [balances, setBalances] = useState<{ [mint: string]: string }>({});
   const [loadingBalances, setLoadingBalances] = useState(false);
   const [searchResults, setSearchResults] = useState<Token[]>([]);

@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { useWallet } from '@/hooks/useWallet';
 
 const Header: React.FC = () => {
-  const { connected, connecting, connect, disconnect, walletAddress } = useWallet();
+  const { connected, connecting, connect, disconnect, publicKey } = useWallet();
+  const walletAddress = publicKey ? publicKey.toBase58() : null;
 
   const handleConnect = async () => {
     try {

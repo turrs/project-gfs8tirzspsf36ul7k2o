@@ -20,16 +20,12 @@ const Index = () => {
       <main className="max-w-6xl mx-auto px-4 pt-24 pb-12">
         <div className="flex flex-col md:flex-row gap-8 mb-8">
           <div className="w-full md:w-1/2">
-            {!connected ? (
-              <WalletConnection />
-            ) : (
-              <SwapInterface
-                fromToken={fromToken}
-                toToken={toToken}
-                setFromToken={setFromToken}
-                setToToken={setToToken}
-              />
-            )}
+            <SwapInterface
+              fromToken={fromToken}
+              toToken={toToken}
+              setFromToken={setFromToken}
+              setToToken={setToToken}
+            />
           </div>
           <div className="w-full md:w-1/2">
             <Jumbotron />
