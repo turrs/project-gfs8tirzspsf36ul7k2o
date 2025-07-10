@@ -146,7 +146,7 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
         (token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
           token.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
         (!selectedToken || token.address !== selectedToken.address)
-      );
+  );
 
   const handleSelectToken = (token: Token) => {
     onSelectToken(token);
@@ -179,35 +179,35 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
             <div className="text-center text-gray-400 py-8">No tokens found.</div>
           ) : (
             filteredTokens.map((token) => (
-              <div
-                key={token.address}
-                onClick={() => handleSelectToken(token)}
-                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-[#2A2A3A] ${
+            <div
+              key={token.address}
+              onClick={() => handleSelectToken(token)}
+              className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-[#2A2A3A] ${
                   selectedToken && selectedToken.address === token.address ? 'bg-[#2A2A3A]' : ''
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  {token.logoURI && (
-                    <img
-                      src={token.logoURI}
-                      alt={token.symbol}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium text-white">{token.symbol}</p>
-                    <p className="text-sm text-gray-400">{token.name}</p>
-                  </div>
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                {token.logoURI && (
+                  <img
+                    src={token.logoURI}
+                    alt={token.symbol}
+                    className="w-8 h-8 rounded-full"
+                  />
+                )}
+                <div>
+                  <p className="font-medium text-white">{token.symbol}</p>
+                  <p className="text-sm text-gray-400">{token.name}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Balance</p>
-                  <p className="font-medium text-white">
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-400">Balance</p>
+                <p className="font-medium text-white">
                     {loadingBalances
                       ? '...'
                       : balances[token.address] ?? '0.00'}
-                  </p>
-                </div>
+                </p>
               </div>
+            </div>
             ))
           )}
         </div>

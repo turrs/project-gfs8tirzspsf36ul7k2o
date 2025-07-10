@@ -120,18 +120,18 @@ export const useWallet = (): UseWalletReturn => {
       }
       walletAdapter.on('connect', handleConnect);
       walletAdapter.on('disconnect', handleDisconnect);
-
+      
       // Check if already connected
       if (walletAdapter.isConnected && walletAdapter.publicKey) {
         setConnected(true);
         setPublicKey(walletAdapter.publicKey);
       }
 
-      // Auto-connect if previously connected
-      if (walletAdapter.isConnected) {
-        walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
-          // Ignore errors for auto-connect
-        });
+        // Auto-connect if previously connected
+        if (walletAdapter.isConnected) {
+          walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
+            // Ignore errors for auto-connect
+          });
       }
     }
 

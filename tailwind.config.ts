@@ -64,7 +64,7 @@ export default {
 				},
 				// DEX specific colors
 				dex: {
-					primary: '#9945FF',
+					primary: '#9AE462',
 					secondary: '#14F195',
 					accent: '#FFA500',
 					dark: '#0D0E14',
@@ -119,8 +119,8 @@ export default {
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			},
 			backgroundImage: {
-				'gradient-dex': 'linear-gradient(135deg, #9945FF 0%, #14F195 100%)',
-				'gradient-card': 'linear-gradient(135deg, rgba(153, 69, 255, 0.1) 0%, rgba(20, 241, 149, 0.1) 100%)'
+				'gradient-dex': 'linear-gradient(135deg, #9AE462 0%, #14F195 100%)',
+				'gradient-card': 'linear-gradient(135deg, rgba(154, 228, 98, 0.1) 0%, rgba(20, 241, 149, 0.1) 100%)'
 			}
 		}
 	},
