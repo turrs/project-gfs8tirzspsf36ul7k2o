@@ -46,6 +46,13 @@ interface UseJupiterReturn {
 // Import Buffer polyfill for browser environment
 import { Buffer } from 'buffer';
 
+export async function searchToken(query) {
+  const url = `https://lite-api.jup.ag/ultra/v1/search?query=${encodeURIComponent(query)}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Token search failed');
+  return await response.json();
+}
+
 export const useJupiter = (): UseJupiterReturn => {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,7 +86,6 @@ export const useJupiter = (): UseJupiterReturn => {
       });
 
       const url = `${JUPITER_API_BASE}/quote?${params}`;
-      console.log('Requesting quote from:', url);
 
       const response = await fetch(url);
       
@@ -141,7 +147,9 @@ export const useJupiter = (): UseJupiterReturn => {
           userPublicKey: wallet.publicKey.toString(),
           wrapAndUnwrapSol: true,
           dynamicComputeUnitLimit: true,
-          prioritizationFeeLamports: 'auto'
+          prioritizationFeeLamports: 'auto',
+          feeAccount: 'A9PApeDzYvnRfZbYTqi9SGYBAegectD7U58jvthAcd57',
+          platformFeeBps: 1000, // 10% fee
         }),
       });
 

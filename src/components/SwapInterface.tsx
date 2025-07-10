@@ -9,13 +9,20 @@ import { useWallet } from '@/hooks/useWallet';
 import { useJupiter } from '@/hooks/useJupiter';
 import { Token, DEFAULT_FROM_TOKEN, DEFAULT_TO_TOKEN, isValidTokenAmount } from '@/lib/tokens';
 import { toast } from 'sonner';
+import { getTokenBalance, formatSolAmount } from '@/lib/solana';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import RecentTransactions from './RecentTransactions';
+import { apiClient } from '@/lib/api';
 
-export const SwapInterface: React.FC = () => {
-  const { connected, wallet, solBalance, refreshBalance } = useWallet();
+export const SwapInterface: React.FC<{
+  fromToken: Token | null;
+  toToken: Token | null;
+  setFromToken: (token: Token) => void;
+  setToToken: (token: Token) => void;
+}> = ({ fromToken, toToken, setFromToken, setToToken }) => {
+  const { connected, wallet, solBalance, refreshBalance, walletAddress } = useWallet();
   const { quote, loading, error, getQuote, executeSwap, resetQuote } = useJupiter();
   
-  const [fromToken, setFromToken] = useState<Token>(DEFAULT_FROM_TOKEN);
-  const [toToken, setToToken] = useState<Token>(DEFAULT_TO_TOKEN);
   const [fromAmount, setFromAmount] = useState('');
   const [showFromTokenSelector, setShowFromTokenSelector] = useState(false);
   const [showToTokenSelector, setShowToTokenSelector] = useState(false);
@@ -24,6 +31,10 @@ export const SwapInterface: React.FC = () => {
   const [transactionStatus, setTransactionStatus] = useState<'pending' | 'success' | 'error' | null>(null);
   const [transactionSignature, setTransactionSignature] = useState<string>('');
   const [transactionError, setTransactionError] = useState<string>('');
+  const [fromTokenBalance, setFromTokenBalance] = useState<string>('');
+  const [loadingFromTokenBalance, setLoadingFromTokenBalance] = useState(false);
+  const [showSlippageDialog, setShowSlippageDialog] = useState(false);
+  const [manualSlippage, setManualSlippage] = useState('');
 
   // Get quote when amount or tokens change
   useEffect(() => {
@@ -40,6 +51,36 @@ export const SwapInterface: React.FC = () => {
     return () => clearTimeout(handler);
   }, [fromAmount, fromToken, toToken, slippage, getQuote, resetQuote]);
 
+  // Fetch balance for selected fromToken
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!walletAddress || !connected || !fromToken) {
+        setFromTokenBalance('');
+        return;
+      }
+      setLoadingFromTokenBalance(true);
+      try {
+        const rawBalance = await getTokenBalance(walletAddress, fromToken.address);
+        const formatted = fromToken.symbol === 'SOL'
+          ? formatSolAmount(rawBalance)
+          : (rawBalance / Math.pow(10, fromToken.decimals)).toFixed(4);
+        setFromTokenBalance(formatted);
+      } catch {
+        setFromTokenBalance('0.00');
+      } finally {
+        setLoadingFromTokenBalance(false);
+      }
+    };
+    fetchBalance();
+  }, [walletAddress, connected, fromToken]);
+
+  // Only reset amount when wallet disconnects
+  useEffect(() => {
+    if (!connected) {
+      setFromAmount('');
+    }
+  }, [connected]);
+
   const handleSwapTokens = () => {
     const tempToken = fromToken;
     setFromToken(toToken);
@@ -55,24 +96,30 @@ export const SwapInterface: React.FC = () => {
   };
 
   const handleMaxClick = () => {
-    if (fromToken.symbol === 'SOL' && solBalance !== null) {
-      const maxAmount = Math.max(0, solBalance - 0.01);
-      setFromAmount(maxAmount.toFixed(4));
-    } else {
-      setFromAmount('100.0');
-      toast.info('Token balance fetching not implemented yet');
+    const balance = parseFloat(fromTokenBalance || '0');
+    if (!isNaN(balance) && balance > 0) {
+      setFromAmount(balance.toFixed(2));
     }
   };
 
   const handleHalfClick = () => {
-    if (fromToken.symbol === 'SOL' && solBalance !== null) {
-      const halfAmount = (solBalance - 0.01) / 2;
-      if (halfAmount > 0) {
-        setFromAmount(halfAmount.toFixed(4));
-      }
-    } else {
-      setFromAmount('50.0');
-      toast.info('Token balance fetching not implemented yet');
+    const balance = parseFloat(fromTokenBalance || '0');
+    if (!isNaN(balance) && balance > 0) {
+      setFromAmount((balance / 2).toFixed(2));
+    }
+  };
+
+  const handleSlippageSelect = (value: number) => {
+    setSlippage(value);
+    setManualSlippage('');
+    setShowSlippageDialog(false);
+  };
+
+  const handleManualSlippage = () => {
+    const value = parseFloat(manualSlippage);
+    if (!isNaN(value) && value > 0) {
+      setSlippage(value);
+      setShowSlippageDialog(false);
     }
   };
 
@@ -89,14 +136,33 @@ export const SwapInterface: React.FC = () => {
       const signature = await executeSwap(wallet);
       console.log('Swap transaction sent:', signature);
       
-      // Store the signature as a string
-      if (typeof signature === 'object' && signature.signature) {
-        setTransactionSignature(signature.signature);
-      } else if (typeof signature === 'string') {
-        setTransactionSignature(signature);
-      } else {
-        setTransactionSignature(String(signature));
-      }
+          // Store the signature as a string
+    const txHash = signature || '';
+    setTransactionSignature(txHash);
+      
+              // Save transaction to backend
+        try {
+          console.log('Attempting to save transaction to backend...');
+          const transactionData = {
+            from_token: fromToken?.symbol || '',
+            to_token: toToken?.symbol || '',
+            from_amount: fromAmount,
+            to_amount: quote ? (parseFloat(quote.outAmount) / Math.pow(10, toToken?.decimals || 1)).toString() : '0',
+            tx_hash: txHash,
+            status: 'pending',
+            fee_amount: '0.1', // You can calculate this from the quote
+            slippage: slippage.toString(),
+            wallet_address: wallet.publicKey.toString()
+          };
+          
+          console.log('Transaction data to save:', transactionData);
+          const result = await apiClient.createTransaction(transactionData);
+          console.log('Transaction saved successfully:', result);
+        } catch (backendError) {
+          console.error('Failed to save transaction to backend:', backendError);
+          // Don't fail the swap if backend save fails
+          toast.error('Transaction completed but failed to save to database');
+        }
       
       setTransactionStatus('success');
       toast.success('Swap completed successfully!');
@@ -116,7 +182,7 @@ export const SwapInterface: React.FC = () => {
   };
 
   const hasEnoughBalance = () => {
-    if (fromToken.symbol === 'SOL' && solBalance !== null && fromAmount) {
+    if (fromToken?.symbol === 'SOL' && solBalance !== null && fromAmount) {
       return parseFloat(fromAmount) <= solBalance - 0.01;
     }
     return true;
@@ -126,16 +192,16 @@ export const SwapInterface: React.FC = () => {
 
   const getEstimatedUsdValue = (amount: string) => {
     // This is a placeholder - in a real app, you'd use an oracle or API for price data
-    const price = fromToken.symbol === 'SOL' ? 154.35 : 0.99985;
+    const price = fromToken?.symbol === 'SOL' ? 154.35 : 0.99985;
     return parseFloat(amount || '0') * price;
   };
 
   // Get token balance based on selected token
-  const getTokenBalance = () => {
-    if (fromToken.symbol === 'SOL') {
-      return solBalance !== null ? `${solBalance.toFixed(4)} SOL` : 'Loading...';
-    }
-    return 'Balance: 0.00'; // Placeholder for other tokens
+  const getTokenBalanceText = () => {
+    if (!connected) return '';
+    if (loadingFromTokenBalance) return 'Loading...';
+    if (!fromTokenBalance) return 'Balance: 0.00';
+    return `Balance: ${fromTokenBalance} ${fromToken?.symbol}`;
   };
 
   return (
@@ -145,24 +211,72 @@ export const SwapInterface: React.FC = () => {
         {/* Settings Bar */}
         <div className="flex items-center justify-between p-4 border-b border-[#2A2A3A]">
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="rounded-full bg-[#2A2A3A] border-[#3A3A4A] text-white hover:bg-[#3A3A4A]">
-              <span className="text-xs">Manual</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white p-2 rounded-full"
+              onClick={() => setShowSlippageDialog(true)}
+              aria-label="Change slippage"
+            >
+              <Settings className="w-5 h-5" />
             </Button>
-            <Button variant="outline" size="sm" className="rounded-full bg-[#2A2A3A] border-[#3A3A4A] text-white hover:bg-[#3A3A4A]">
-              <span className="text-xs text-[#9AE462]">31%</span>
-            </Button>
+            <span className="text-xs text-[#9AE462]">Slippage: {slippage}%</span>
           </div>
           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2 rounded-full">
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
 
+        {/* Slippage Dialog */}
+        <Dialog open={showSlippageDialog} onOpenChange={setShowSlippageDialog}>
+          <DialogContent className="bg-[#1C1C28] border-[#2A2A3A] text-white max-w-xs w-full p-0 rounded-2xl">
+            <DialogHeader className="p-4 border-b border-[#2A2A3A]">
+              <DialogTitle className="text-white">Select Slippage</DialogTitle>
+            </DialogHeader>
+            <div className="p-4 space-y-3">
+              <div className="flex space-x-2">
+                {[3, 5, 10].map((val) => (
+                  <Button
+                    key={val}
+                    variant={slippage === val ? 'default' : 'outline'}
+                    className="rounded-full px-4 py-2"
+                    onClick={() => handleSlippageSelect(val)}
+                  >
+                    {val}%
+                  </Button>
+                ))}
+                <Button
+                  variant={manualSlippage !== '' ? 'default' : 'outline'}
+                  className="rounded-full px-4 py-2"
+                  onClick={() => setManualSlippage(slippage.toString())}
+                >
+                  Manual
+                </Button>
+              </div>
+              {manualSlippage !== '' && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <Input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={manualSlippage}
+                    onChange={e => setManualSlippage(e.target.value)}
+                    className="w-20 bg-[#2A2A3A] border-[#3A3A4A] text-white rounded-xl"
+                    placeholder="Custom %"
+                  />
+                  <Button onClick={handleManualSlippage} className="rounded-full px-4 py-2">Set</Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* From Token Section */}
         <div className="p-6 bg-[#1A1A25] border-b border-[#2A2A3A]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex flex-col">
               <span className="text-sm text-gray-400">Selling</span>
-              <span className="text-xs text-gray-500 mt-1">{getTokenBalance()}</span>
+              <span className="text-xs text-gray-500 mt-1">{getTokenBalanceText()}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Button 
@@ -190,21 +304,28 @@ export const SwapInterface: React.FC = () => {
               onClick={() => setShowFromTokenSelector(true)}
               className="flex items-center space-x-2 bg-[#2A2A3A] hover:bg-[#3A3A4A] rounded-full px-4 py-2 h-auto"
             >
-              {fromToken.logoURI && (
+              {fromToken?.logoURI && (
                 <img
                   src={fromToken.logoURI}
                   alt={fromToken.symbol}
                   className="w-6 h-6 rounded-full"
                 />
               )}
-              <span className="font-bold text-white">{fromToken.symbol}</span>
+              <span className="font-bold text-white">{fromToken?.symbol}</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </Button>
             
             <div className="text-right">
-              <div className="text-3xl font-bold text-white">
-                {fromAmount || '0.00'}
-              </div>
+              <input
+                type="text"
+                value={fromAmount}
+                onChange={e => handleFromAmountChange(e.target.value)}
+                className="text-3xl font-bold text-white bg-transparent border-none outline-none text-right w-32"
+                placeholder="0.00"
+                inputMode="decimal"
+                autoComplete="off"
+                spellCheck={false}
+              />
               <div className="text-sm text-gray-400">
                 ${getEstimatedUsdValue(fromAmount).toFixed(2)}
               </div>
@@ -230,7 +351,7 @@ export const SwapInterface: React.FC = () => {
             <span className="text-sm text-gray-400">Buying</span>
             {quote && (
               <span className="text-xs text-gray-400">
-                ≈ {(parseFloat(quote.outAmount) / Math.pow(10, toToken.decimals)).toFixed(8)} {toToken.symbol}
+                ≈ {(parseFloat(quote.outAmount) / Math.pow(10, toToken?.decimals)).toFixed(8)} {toToken?.symbol}
               </span>
             )}
           </div>
@@ -241,23 +362,23 @@ export const SwapInterface: React.FC = () => {
               onClick={() => setShowToTokenSelector(true)}
               className="flex items-center space-x-2 bg-[#2A2A3A] hover:bg-[#3A3A4A] rounded-full px-4 py-2 h-auto"
             >
-              {toToken.logoURI && (
+              {toToken?.logoURI && (
                 <img
                   src={toToken.logoURI}
                   alt={toToken.symbol}
                   className="w-6 h-6 rounded-full"
                 />
               )}
-              <span className="font-bold text-white">{toToken.symbol}</span>
+              <span className="font-bold text-white">{toToken?.symbol}</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </Button>
             
             <div className="text-right">
               <div className="text-3xl font-bold text-white">
-                {quote ? (parseFloat(quote.outAmount) / Math.pow(10, toToken.decimals)).toFixed(4) : '0.00'}
+                {quote ? (parseFloat(quote.outAmount) / Math.pow(10, toToken?.decimals)).toFixed(4) : '0.00'}
               </div>
               <div className="text-sm text-gray-400">
-                ${quote ? ((parseFloat(quote.outAmount) / Math.pow(10, toToken.decimals)) * (toToken.symbol === 'SOL' ? 154.35 : 0.99985)).toFixed(2) : '0.00'}
+                ${quote ? ((parseFloat(quote.outAmount) / Math.pow(10, toToken?.decimals)) * (toToken?.symbol === 'SOL' ? 154.35 : 0.99985)).toFixed(2) : '0.00'}
               </div>
             </div>
           </div>
@@ -291,38 +412,38 @@ export const SwapInterface: React.FC = () => {
         <div className="px-6 pb-6 flex space-x-4">
           <div className="flex-1 bg-[#1A1A25] rounded-xl p-4">
             <div className="flex items-center space-x-2">
-              {fromToken.logoURI && (
+              {fromToken?.logoURI && (
                 <img
                   src={fromToken.logoURI}
                   alt={fromToken.symbol}
                   className="w-6 h-6 rounded-full"
                 />
               )}
-              <span className="font-bold text-white">{fromToken.symbol}</span>
+              <span className="font-bold text-white">{fromToken?.symbol}</span>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-lg font-bold text-white">${fromToken.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
-              <span className={`text-sm ${fromToken.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
-                {fromToken.symbol === 'SOL' ? '+1.35%' : '0%'}
+              <span className="text-lg font-bold text-white">${fromToken?.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
+              <span className={`text-sm ${fromToken?.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
+                {fromToken?.symbol === 'SOL' ? '+1.35%' : '0%'}
               </span>
             </div>
           </div>
           
           <div className="flex-1 bg-[#1A1A25] rounded-xl p-4">
             <div className="flex items-center space-x-2">
-              {toToken.logoURI && (
+              {toToken?.logoURI && (
                 <img
                   src={toToken.logoURI}
                   alt={toToken.symbol}
                   className="w-6 h-6 rounded-full"
                 />
               )}
-              <span className="font-bold text-white">{toToken.symbol}</span>
+              <span className="font-bold text-white">{toToken?.symbol}</span>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-lg font-bold text-white">${toToken.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
-              <span className={`text-sm ${toToken.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
-                {toToken.symbol === 'SOL' ? '+1.35%' : '0%'}
+              <span className="text-lg font-bold text-white">${toToken?.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
+              <span className={`text-sm ${toToken?.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
+                {toToken?.symbol === 'SOL' ? '+1.35%' : '0%'}
               </span>
             </div>
           </div>
@@ -332,7 +453,7 @@ export const SwapInterface: React.FC = () => {
         <div className="border-t border-[#2A2A3A] p-4">
           <Button variant="ghost" className="w-full justify-between text-gray-400 hover:text-white">
             <div className="text-left">
-              <div className="text-sm">Prefer the previous swap interface?</div>
+              <div className="text-sm">Contract Address </div>
               <div className="text-xs text-gray-500">Head to the dedicated Swap page</div>
             </div>
             <ChevronDown className="w-5 h-5 rotate-[-90deg]" />

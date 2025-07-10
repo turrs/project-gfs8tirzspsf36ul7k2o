@@ -2,14 +2,20 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useWallet } from '@/hooks/useWallet';
+import { useAuth } from '@/contexts/AuthContext';
 import { Wallet, ExternalLink } from 'lucide-react';
 
 export const WalletConnection: React.FC = () => {
-  const { connect, connecting } = useWallet();
+  const { connect, connecting, publicKey } = useWallet();
+  const { user, updateWalletAddress } = useAuth();
 
   const handleConnect = async () => {
     try {
       await connect();
+      // After successful connection, update wallet address if user is logged in
+      if (user && publicKey) {
+        await updateWalletAddress(publicKey.toString());
+      }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
     }

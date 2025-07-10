@@ -1,43 +1,19 @@
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 
-// Jupiter API configuration
-export const JUPITER_API_BASE = 'https://quote-api.jup.ag/v6';
-
-// Solana RPC endpoints
-const RPC_ENDPOINTS = [
-  'https://api.mainnet-beta.solana.com',
-  'https://solana-api.projectserum.com',
-  clusterApiUrl('mainnet-beta')
-];
+// Alchemy Solana RPC endpoint
+const ALCHEMY_RPC_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/U0EeAoRs5SyyPwBos2dq-';
 
 let connection: Connection | null = null;
-let currentEndpointIndex = 0;
 
-// Get connection with fallback endpoints
+// Get connection using Alchemy endpoint
 export const getConnection = async (): Promise<Connection> => {
   if (!connection) {
-    connection = new Connection(RPC_ENDPOINTS[currentEndpointIndex], {
+    connection = new Connection(ALCHEMY_RPC_ENDPOINT, {
       commitment: 'confirmed',
       confirmTransactionInitialTimeout: 60000,
     });
   }
-  
-  try {
-    // Test the connection
-    await connection.getLatestBlockhash();
-    return connection;
-  } catch (error) {
-    console.warn(`RPC endpoint ${RPC_ENDPOINTS[currentEndpointIndex]} failed, trying next...`);
-    
-    // Try next endpoint
-    currentEndpointIndex = (currentEndpointIndex + 1) % RPC_ENDPOINTS.length;
-    connection = new Connection(RPC_ENDPOINTS[currentEndpointIndex], {
-      commitment: 'confirmed',
-      confirmTransactionInitialTimeout: 60000,
-    });
-    
-    return connection;
-  }
+  return connection;
 };
 
 // Get token balance for a given wallet and token mint
@@ -89,3 +65,5 @@ export const formatSolAmount = (lamports: number): string => {
 export const solToLamports = (sol: number): number => {
   return Math.floor(sol * 1e9);
 };
+
+export const JUPITER_API_BASE = 'https://quote-api.jup.ag/v6';

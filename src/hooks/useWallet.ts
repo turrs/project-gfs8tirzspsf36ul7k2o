@@ -54,6 +54,22 @@ export const useWallet = (): UseWalletReturn => {
     return null;
   }, []);
 
+  // Event handlers moved out of useEffect for reuse
+  const handleConnect = useCallback((publicKey: any) => {
+    console.log('Wallet connected:', publicKey?.toString());
+    setConnected(true);
+    setPublicKey(publicKey);
+    setConnecting(false);
+  }, []);
+
+  const handleDisconnect = useCallback(() => {
+    console.log('Wallet disconnected');
+    setConnected(false);
+    setPublicKey(null);
+    setSolBalance(null);
+    setConnecting(false);
+  }, []);
+
   // Function to get SOL balance with improved error handling and retries
   const refreshBalance = useCallback(async () => {
     if (!publicKey || !connected) {
@@ -92,60 +108,40 @@ export const useWallet = (): UseWalletReturn => {
     }
   }, [publicKey, connected]);
 
-  // Initialize wallet connection
+  // Initialize wallet connection and listeners
   useEffect(() => {
     const walletAdapter = getWallet();
     if (walletAdapter) {
       setWallet(walletAdapter);
-      
+
+      // Remove all listeners to avoid duplicates
+      if (walletAdapter.removeAllListeners) {
+        try { walletAdapter.removeAllListeners(); } catch {}
+      }
+      walletAdapter.on('connect', handleConnect);
+      walletAdapter.on('disconnect', handleDisconnect);
+
       // Check if already connected
       if (walletAdapter.isConnected && walletAdapter.publicKey) {
         setConnected(true);
         setPublicKey(walletAdapter.publicKey);
       }
 
-      // Listen for connection events
-      const handleConnect = (publicKey: any) => {
-        console.log('Wallet connected:', publicKey?.toString());
-        setConnected(true);
-        setPublicKey(publicKey);
-        setConnecting(false);
-      };
-
-      const handleDisconnect = () => {
-        console.log('Wallet disconnected');
-        setConnected(false);
-        setPublicKey(null);
-        setSolBalance(null);
-        setConnecting(false);
-      };
-
-      try {
-        walletAdapter.on('connect', handleConnect);
-        walletAdapter.on('disconnect', handleDisconnect);
-
-        // Auto-connect if previously connected
-        if (walletAdapter.isConnected) {
-          walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
-            // Ignore errors for auto-connect
-          });
-        }
-      } catch (error) {
-        console.error('Error setting up wallet listeners:', error);
+      // Auto-connect if previously connected
+      if (walletAdapter.isConnected) {
+        walletAdapter.connect({ onlyIfTrusted: true }).catch(() => {
+          // Ignore errors for auto-connect
+        });
       }
     }
 
     return () => {
       // Cleanup listeners
       if (walletAdapter && walletAdapter.removeAllListeners) {
-        try {
-          walletAdapter.removeAllListeners();
-        } catch (error) {
-          console.error('Error removing wallet listeners:', error);
-        }
+        try { walletAdapter.removeAllListeners(); } catch {}
       }
     };
-  }, [getWallet]);
+  }, [getWallet, handleConnect, handleDisconnect]);
 
   // Refresh balance when wallet connects
   useEffect(() => {
@@ -161,20 +157,25 @@ export const useWallet = (): UseWalletReturn => {
 
   const connect = useCallback(async () => {
     if (!wallet) {
-      // Redirect to wallet installation
       window.open('https://phantom.app/', '_blank');
       return;
     }
 
     try {
       setConnecting(true);
+      // Remove old listeners to avoid duplicates
+      wallet.removeAllListeners && wallet.removeAllListeners();
+      // Set up listeners before connecting
+      wallet.on('connect', handleConnect);
+      wallet.on('disconnect', handleDisconnect);
       await wallet.connect();
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      setConnecting(false);
       throw error;
+    } finally {
+      setConnecting(false);
     }
-  }, [wallet]);
+  }, [wallet, handleConnect, handleDisconnect]);
 
   const disconnect = useCallback(async () => {
     if (!wallet) return;
