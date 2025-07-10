@@ -14,6 +14,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import RecentTransactions from './RecentTransactions';
 import { apiClient } from '@/lib/api';
 
+export function useJupiterPrice(fromToken, toToken, amount = "1") {
+  const { quote, getQuote, loading, error } = useJupiter();
+
+  useEffect(() => {
+    if (fromToken && toToken) {
+      getQuote(fromToken, toToken, amount);
+    }
+  }, [fromToken, toToken, amount, getQuote]);
+
+  let price = null;
+  if (quote) {
+    price = (parseFloat(quote.outAmount) / Math.pow(10, toToken.decimals)) /
+            (parseFloat(quote.inAmount) / Math.pow(10, fromToken.decimals));
+  }
+
+  return { price, loading, error };
+}
+
 export const SwapInterface: React.FC<{
   fromToken: Token | null;
   toToken: Token | null;
@@ -35,6 +53,7 @@ export const SwapInterface: React.FC<{
   const [loadingFromTokenBalance, setLoadingFromTokenBalance] = useState(false);
   const [showSlippageDialog, setShowSlippageDialog] = useState(false);
   const [manualSlippage, setManualSlippage] = useState('');
+  const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
 
   // Get quote when amount or tokens change
   useEffect(() => {
@@ -54,13 +73,13 @@ export const SwapInterface: React.FC<{
   // Fetch balance for selected fromToken
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!walletAddress || !connected || !fromToken) {
+      if (!wallet?.publicKey || !connected || !fromToken) {
         setFromTokenBalance('');
         return;
       }
       setLoadingFromTokenBalance(true);
       try {
-        const rawBalance = await getTokenBalance(walletAddress, fromToken.address);
+        const rawBalance = await getTokenBalance(wallet.publicKey.toBase58(), fromToken.address);
         const formatted = fromToken.symbol === 'SOL'
           ? formatSolAmount(rawBalance)
           : (rawBalance / Math.pow(10, fromToken.decimals)).toFixed(4);
@@ -72,7 +91,7 @@ export const SwapInterface: React.FC<{
       }
     };
     fetchBalance();
-  }, [walletAddress, connected, fromToken]);
+  }, [wallet?.publicKey, connected, fromToken, balanceRefreshKey]);
 
   // Only reset amount when wallet disconnects
   useEffect(() => {
@@ -169,7 +188,7 @@ export const SwapInterface: React.FC<{
       
       setFromAmount('');
       resetQuote();
-      refreshBalance(); // Refresh balance after successful swap
+      setBalanceRefreshKey((k) => k + 1); // <-- Add this
     } catch (err) {
       console.error('Swap failed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Swap failed';
@@ -204,6 +223,12 @@ export const SwapInterface: React.FC<{
     return `Balance: ${fromTokenBalance} ${fromToken?.symbol}`;
   };
 
+  const handleRefresh = () => {
+    if (fromToken && toToken && fromAmount) {
+      getQuote(fromToken, toToken, fromAmount, slippage * 100);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Main Swap Card - New Design */}
@@ -222,7 +247,12 @@ export const SwapInterface: React.FC<{
             </Button>
             <span className="text-xs text-[#9AE462]">Slippage: {slippage}%</span>
           </div>
-          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2 rounded-full">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-white p-2 rounded-full"
+            onClick={handleRefresh}
+          >
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
@@ -408,46 +438,8 @@ export const SwapInterface: React.FC<{
           </Button>
         </div>
 
-        {/* Token Price Info */}
-        <div className="px-6 pb-6 flex space-x-4">
-          <div className="flex-1 bg-[#1A1A25] rounded-xl p-4">
-            <div className="flex items-center space-x-2">
-              {fromToken?.logoURI && (
-                <img
-                  src={fromToken.logoURI}
-                  alt={fromToken.symbol}
-                  className="w-6 h-6 rounded-full"
-                />
-              )}
-              <span className="font-bold text-white">{fromToken?.symbol}</span>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-lg font-bold text-white">${fromToken?.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
-              <span className={`text-sm ${fromToken?.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
-                {fromToken?.symbol === 'SOL' ? '+1.35%' : '0%'}
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex-1 bg-[#1A1A25] rounded-xl p-4">
-            <div className="flex items-center space-x-2">
-              {toToken?.logoURI && (
-                <img
-                  src={toToken.logoURI}
-                  alt={toToken.symbol}
-                  className="w-6 h-6 rounded-full"
-                />
-              )}
-              <span className="font-bold text-white">{toToken?.symbol}</span>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-lg font-bold text-white">${toToken?.symbol === 'SOL' ? '154.35' : '0.99985'}</span>
-              <span className={`text-sm ${toToken?.symbol === 'SOL' ? 'text-green-400' : 'text-red-400'}`}>
-                {toToken?.symbol === 'SOL' ? '+1.35%' : '0%'}
-              </span>
-            </div>
-          </div>
-        </div>
+      
+
 
         {/* Previous Interface Link */}
         <div className="border-t border-[#2A2A3A] p-4">
