@@ -410,11 +410,13 @@ export const SwapInterface: React.FC<{
           </div>
         </div>
 
+
         {/* Router Info */}
-        <div className="px-6 py-4 border-t border-[#2A2A3A]">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Routers: Auto</span>
-          </div>
+        <div className="px-6 py-4 border-t border-[#2A2A3A] flex items-center justify-between">
+          <span className="text-sm text-gray-400">Routers: Auto</span>
+          {quote && quote.priceImpactPct && (
+            <span className="text-xs text-gray-400">Price Impact: <span className="font-semibold text-white">{(parseFloat(quote.priceImpactPct) * 100).toFixed(2)}%</span></span>
+          )}
         </div>
 
         {/* Swap Button */}
