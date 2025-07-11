@@ -450,10 +450,10 @@ export const SwapInterface: React.FC<{
 
         {/* Previous Interface Link */}
         <div className="border-t border-[#2A2A3A] p-4">
-          <Button variant="ghost" onClick={() => window.open('https://letsbonk.fun/token/Kqxig2UMsry1z9CxiKsAvDm4EeBaKq52qAfjJAKbonk', '_blank')} className="w-full justify-between text-gray-400 hover:text-white">
+          <Button variant="ghost" onClick={() => window.open('https://x.com/JupSuck', '_blank')} className="w-full justify-between text-gray-400 hover:text-white">
             <div className="text-left">
               <div className="text-sm">Contract Address </div>
-              <div className="text-xs text-gray-500">Kqxig2UMsry1z9CxiKsAvDm4EeBaKq52qAfjJAKbonk</div>
+              <div className="text-xs text-gray-500">Check out our Twitter for more info</div>
             </div>
             <ChevronDown className="w-5 h-5 rotate-[-90deg]" />
           </Button>
